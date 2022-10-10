@@ -1,6 +1,7 @@
 package io.github.scafer.prices.crawler.content.controller;
 
 import io.github.scafer.prices.crawler.content.common.dto.product.ProductDataDto;
+import io.github.scafer.prices.crawler.content.common.dto.product.ProductListItemDto;
 import io.github.scafer.prices.crawler.content.common.dto.product.search.SearchProductDto;
 import io.github.scafer.prices.crawler.content.common.dto.product.search.SearchProductsDto;
 import io.github.scafer.prices.crawler.content.common.dto.product.search.SearchQueryDto;
@@ -54,13 +55,12 @@ public class ProductController {
 
     @CrossOrigin
     @PostMapping("/products/list/update")
-    public Mono<List<SearchProductDto>> updateProducts(@RequestBody List<SearchProductDto> searchQuery) {
+    public Mono<List<ProductListItemDto>> updateProducts(@RequestBody List<ProductListItemDto> productList) {
+        var responses = new ArrayList<Mono<ProductListItemDto>>();
 
-        var responses = new ArrayList<Mono<SearchProductDto>>();
-
-        for (var search : searchQuery) {
-            var productService = getProductServiceFromCatalog(IdUtils.parse(search.getLocale(), search.getCatalog()));
-            responses.add(productService.updateProduct(search));
+        for (var item : productList) {
+            var productService = getProductServiceFromCatalog(IdUtils.parse(item.getLocale(), item.getCatalog()));
+            responses.add(productService.updateProduct(item));
         }
 
         return Mono.zipDelayError(responses, objects -> new ArrayList(Arrays.asList(objects)));
@@ -71,7 +71,6 @@ public class ProductController {
     public ProductDataDto productHistory(@PathVariable String locale, @PathVariable String catalog, @PathVariable String reference,
                                          @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startDate,
                                          @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime endDate) {
-
         return productDataService.findProduct(locale, catalog, reference)
                 .map(value ->
                         new ProductDataDto(value).withPrices(startDate, endDate))

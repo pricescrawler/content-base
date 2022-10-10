@@ -1,5 +1,6 @@
 package io.github.scafer.prices.crawler.content.service.product;
 
+import io.github.scafer.prices.crawler.content.common.dto.product.ProductListItemDto;
 import io.github.scafer.prices.crawler.content.common.dto.product.search.SearchProductDto;
 import io.github.scafer.prices.crawler.content.common.dto.product.search.SearchProductsDto;
 import org.springframework.stereotype.Service;
@@ -11,5 +12,5 @@ public interface ProductService {
 
     Mono<SearchProductDto> searchProductByUrl(String productUrl);
 
-    Mono<SearchProductDto> updateProduct(SearchProductDto query);
+    Mono<ProductListItemDto> updateProduct(ProductListItemDto productListItem);
 }

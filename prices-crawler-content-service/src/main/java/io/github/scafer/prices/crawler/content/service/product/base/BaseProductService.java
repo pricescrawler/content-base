@@ -2,6 +2,7 @@ package io.github.scafer.prices.crawler.content.service.product.base;
 
 import io.github.scafer.prices.crawler.content.common.dao.catalog.CatalogDao;
 import io.github.scafer.prices.crawler.content.common.dao.catalog.LocaleDao;
+import io.github.scafer.prices.crawler.content.common.dto.product.ProductListItemDto;
 import io.github.scafer.prices.crawler.content.common.dto.product.search.SearchProductDto;
 import io.github.scafer.prices.crawler.content.common.dto.product.search.SearchProductsDto;
 import io.github.scafer.prices.crawler.content.repository.catalog.CatalogDataService;
@@ -51,7 +52,7 @@ public abstract class BaseProductService implements ProductService {
 
     protected abstract CompletableFuture<SearchProductDto> searchItemByProductUrlLogic(String productUrl);
 
-    protected abstract CompletableFuture<SearchProductDto> updateItemLogic(SearchProductDto query);
+    protected abstract CompletableFuture<ProductListItemDto> updateItemLogic(ProductListItemDto productListItem);
 
     @Override
     public Mono<SearchProductsDto> searchProduct(String query) {
@@ -83,12 +84,12 @@ public abstract class BaseProductService implements ProductService {
     }
 
     @Override
-    public Mono<SearchProductDto> updateProduct(SearchProductDto query) {
+    public Mono<ProductListItemDto> updateProduct(ProductListItemDto productListItem) {
         if (isLocaleOrCatalogDisabled()) {
-            return Mono.just(query);
+            return Mono.just(productListItem);
         }
 
-        var result = updateItemLogic(query);
+        var result = updateItemLogic(productListItem);
         return Mono.fromFuture(result);
     }
 

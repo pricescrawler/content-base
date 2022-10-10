@@ -1,6 +1,7 @@
 package io.github.scafer.prices.crawler.content.service.product.demo;
 
 import io.github.scafer.prices.crawler.content.common.dto.product.ProductDto;
+import io.github.scafer.prices.crawler.content.common.dto.product.ProductListItemDto;
 import io.github.scafer.prices.crawler.content.common.dto.product.search.SearchProductDto;
 import io.github.scafer.prices.crawler.content.common.dto.product.search.SearchProductsDto;
 import io.github.scafer.prices.crawler.content.common.util.DateTimeUtils;
@@ -36,8 +37,8 @@ public class DemoProductService extends BaseProductService {
     }
 
     @Override
-    protected CompletableFuture<SearchProductDto> updateItemLogic(SearchProductDto query) {
-        return CompletableFuture.completedFuture(null);
+    protected CompletableFuture<ProductListItemDto> updateItemLogic(ProductListItemDto productListItem) {
+        return CompletableFuture.completedFuture(productListItem);
     }
 
     private List<ProductDto> getDemoProducts() {
