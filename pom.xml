@@ -26,8 +26,8 @@
         <java.version>17</java.version>
         <junit.version>4.13.2</junit.version>
         <lombok.version>1.18.24</lombok.version>
-        <springdoc.version>1.6.11</springdoc.version>
-        <de.flapdoodle.embed.mongo>3.4.11</de.flapdoodle.embed.mongo>
+        <springdoc.version>1.6.12</springdoc.version>
+        <de.flapdoodle.embed.mongo>3.5.0</de.flapdoodle.embed.mongo>
     </properties>
 
     <dependencies>
