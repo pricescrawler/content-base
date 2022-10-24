@@ -5,8 +5,8 @@ import io.github.scafer.prices.crawler.content.common.dto.product.ProductListIte
 import io.github.scafer.prices.crawler.content.common.dto.product.search.SearchProductDto;
 import io.github.scafer.prices.crawler.content.common.dto.product.search.SearchProductsDto;
 import io.github.scafer.prices.crawler.content.common.util.DateTimeUtils;
-import io.github.scafer.prices.crawler.content.repository.catalog.CatalogDataService;
-import io.github.scafer.prices.crawler.content.repository.product.ProductDataService;
+import io.github.scafer.prices.crawler.content.repository.catalog.service.CatalogDataService;
+import io.github.scafer.prices.crawler.content.repository.product.service.ProductDataService;
 import io.github.scafer.prices.crawler.content.service.product.base.BaseProductService;
 import io.github.scafer.prices.crawler.content.service.product.cache.ProductCacheService;
 import org.springframework.beans.factory.annotation.Qualifier;

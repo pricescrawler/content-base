@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class ProductCacheDto {
+public class ProductsCacheDto {
     private String date;
 
     private List<ProductDto> products;

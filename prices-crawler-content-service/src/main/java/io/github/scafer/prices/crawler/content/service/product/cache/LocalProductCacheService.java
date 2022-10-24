@@ -1,6 +1,6 @@
 package io.github.scafer.prices.crawler.content.service.product.cache;
 
-import io.github.scafer.prices.crawler.content.common.dto.cache.ProductCacheDto;
+import io.github.scafer.prices.crawler.content.common.dto.cache.ProductsCacheDto;
 import io.github.scafer.prices.crawler.content.common.dto.product.ProductDto;
 import io.github.scafer.prices.crawler.content.common.util.DateTimeUtils;
 import io.github.scafer.prices.crawler.content.common.util.IdUtils;
@@ -16,13 +16,15 @@ import java.util.Map;
 @Service
 public class LocalProductCacheService implements ProductCacheService {
 
-    private static final Map<String, ProductCacheDto> cachedProducts = new HashMap<>();
+    private static final Map<String, ProductsCacheDto> cachedProducts = new HashMap<>();
 
+    @Override
     public void storeProductsList(String locale, String catalog, String reference, List<ProductDto> products) {
         var key = IdUtils.parse(locale, catalog, reference);
-        cachedProducts.computeIfAbsent(key, k -> new ProductCacheDto(DateTimeUtils.getCurrentDateTime(), products));
+        cachedProducts.computeIfAbsent(key, k -> new ProductsCacheDto(DateTimeUtils.getCurrentDateTime(), products));
     }
 
+    @Override
     public boolean isProductListCached(String locale, String catalog, String reference) {
         var isCached = false;
         var key = IdUtils.parse(locale, catalog, reference);
@@ -45,6 +47,30 @@ public class LocalProductCacheService implements ProductCacheService {
         return isCached;
     }
 
+    @Override
+    public boolean isProductCachedByUrl(String url) {
+        var isCached = false;
+
+        for (var element : cachedProducts.entrySet()) {
+
+            for (var product : element.getValue().getProducts()) {
+
+                if (product.getProductUrl().equals(url)) {
+
+                    if (DateTimeUtils.isSameDay(DateTimeUtils.getCurrentDateTime(), product.getDate())) {
+                        return true;
+                    } else {
+                        log.info("Products Cache: removing {}", url);
+                        cachedProducts.remove(element.getKey());
+                    }
+                }
+            }
+        }
+
+        return isCached;
+    }
+
+    @Override
     public List<ProductDto> retrieveProductsList(String locale, String catalog, String reference) {
         List<ProductDto> products = new ArrayList<>();
         var key = IdUtils.parse(locale, catalog, reference);
@@ -60,5 +86,32 @@ public class LocalProductCacheService implements ProductCacheService {
         }
 
         return products;
+    }
+
+    @Override
+    public ProductDto retrieveProductByUrl(String url) {
+        var productDto = new ProductDto();
+
+        for (var element : cachedProducts.entrySet()) {
+            for (var product : element.getValue().getProducts()) {
+
+                if (product.getProductUrl().equals(url)) {
+                    log.info("Products Cache: returning {}", url);
+                    return product;
+                }
+            }
+        }
+
+        return productDto;
+    }
+
+    @Override
+    public void clearOutdatedProducts() {
+        for (var entry : cachedProducts.entrySet()) {
+
+            if (DateTimeUtils.isSameDay(DateTimeUtils.getCurrentDateTime(), entry.getValue().getDate())) {
+                cachedProducts.remove(entry.getKey());
+            }
+        }
     }
 }

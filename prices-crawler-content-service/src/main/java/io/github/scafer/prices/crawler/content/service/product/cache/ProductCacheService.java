@@ -9,5 +9,11 @@ public interface ProductCacheService {
 
     boolean isProductListCached(String locale, String catalog, String reference);
 
+    boolean isProductCachedByUrl(String url);
+
     List<ProductDto> retrieveProductsList(String locale, String catalog, String reference);
+
+    ProductDto retrieveProductByUrl(String url);
+
+    void clearOutdatedProducts();
 }

@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class DataMapUtils {
-
     public static final String PUBLIC = ".public";
 
     public static Map<String, Object> getMapPublicKeys(Map<String, Object> map) {
