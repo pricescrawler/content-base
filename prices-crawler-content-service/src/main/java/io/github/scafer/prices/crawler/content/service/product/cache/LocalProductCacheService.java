@@ -109,7 +109,8 @@ public class LocalProductCacheService implements ProductCacheService {
     public void clearOutdatedProducts() {
         for (var entry : cachedProducts.entrySet()) {
 
-            if (DateTimeUtils.isSameDay(DateTimeUtils.getCurrentDateTime(), entry.getValue().getDate())) {
+            if (!DateTimeUtils.isSameDay(DateTimeUtils.getCurrentDateTime(), entry.getValue().getDate())) {
+                log.info("Products Cache: removing {}", entry.getKey());
                 cachedProducts.remove(entry.getKey());
             }
         }
