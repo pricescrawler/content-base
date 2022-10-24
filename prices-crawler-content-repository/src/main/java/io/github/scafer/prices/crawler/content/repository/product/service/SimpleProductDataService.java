@@ -1,10 +1,11 @@
-package io.github.scafer.prices.crawler.content.repository.product;
+package io.github.scafer.prices.crawler.content.repository.product.service;
 
 import io.github.scafer.prices.crawler.content.common.dao.product.PriceDao;
 import io.github.scafer.prices.crawler.content.common.dao.product.ProductDao;
 import io.github.scafer.prices.crawler.content.common.dto.product.ProductDto;
 import io.github.scafer.prices.crawler.content.common.dto.product.search.SearchProductsDto;
 import io.github.scafer.prices.crawler.content.common.util.IdUtils;
+import io.github.scafer.prices.crawler.content.repository.product.ProductDataRepository;
 import io.github.scafer.prices.crawler.content.repository.product.incident.ProductIncidentDataService;
 import io.github.scafer.prices.crawler.content.repository.product.util.ProductUtils;
 import lombok.extern.log4j.Log4j2;
@@ -21,6 +22,7 @@ import java.util.concurrent.CompletableFuture;
 public class SimpleProductDataService implements ProductDataService {
     private final ProductDataRepository productDataRepository;
     private final ProductIncidentDataService productIncidentDataService;
+
     @Value("${prices.crawler.product-incident.enabled:true}")
     private boolean isProductIncidentEnabled;
 
@@ -32,6 +34,11 @@ public class SimpleProductDataService implements ProductDataService {
     @Override
     public Optional<ProductDao> findProduct(String locale, String catalog, String reference) {
         return productDataRepository.findById(IdUtils.parse(locale, catalog, reference));
+    }
+
+    @Override
+    public List<ProductDao> findProductsByEanUpc(String eanUpc) {
+        return productDataRepository.findAllByEanUpcList(eanUpc);
     }
 
     @Override

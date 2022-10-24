@@ -3,12 +3,12 @@ package io.github.scafer.prices.crawler.content.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.client.MongoClient;
 import io.github.scafer.prices.crawler.content.common.dto.product.search.SearchProductDto;
-import io.github.scafer.prices.crawler.content.common.dto.product.search.SearchProductsDto;
 import io.github.scafer.prices.crawler.content.common.dto.product.search.SearchQueryDto;
 import io.github.scafer.prices.crawler.content.repository.catalog.CatalogDataRepository;
 import io.github.scafer.prices.crawler.content.repository.catalog.CategoryDataRepository;
 import io.github.scafer.prices.crawler.content.repository.catalog.LocaleDataRepository;
-import io.github.scafer.prices.crawler.content.repository.product.ProductDataService;
+import io.github.scafer.prices.crawler.content.repository.product.ProductDataRepository;
+import io.github.scafer.prices.crawler.content.repository.product.service.ProductDataService;
 import io.github.scafer.prices.crawler.content.util.DemoDataUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +20,7 @@ import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"ACTIVE_PROFILE=demo"})
 class ProductControllerTest {
@@ -44,11 +44,15 @@ class ProductControllerTest {
     @Autowired
     private CategoryDataRepository categoryDataRepository;
 
+    @Autowired
+    private ProductDataRepository productDataRepository;
+
     @BeforeEach
     void setup() {
         localeDataRepository.save(DemoDataUtils.getLocaleDao());
         catalogDataRepository.save(DemoDataUtils.getCatalogDao());
         categoryDataRepository.save(DemoDataUtils.getCategoryDao());
+        productDataRepository.save(DemoDataUtils.getProductDao());
     }
 
     @AfterEach()
@@ -56,6 +60,7 @@ class ProductControllerTest {
         localeDataRepository.deleteAll();
         catalogDataRepository.deleteAll();
         categoryDataRepository.deleteAll();
+        productDataRepository.deleteAll();
     }
 
     @Test
@@ -97,8 +102,23 @@ class ProductControllerTest {
     }
 
     @Test
+    void getProductByEanUpc_OK() {
+        var search = String.format("/api/v1/products/history?eanUpc=1");
+        var entity = restTemplate.getForEntity(search, JsonNode.class);
+        assertEquals(HttpStatus.OK, entity.getStatusCode());
+        assertFalse(entity.getBody().isEmpty());
+    }
+
+    @Test
+    void getProductByEanUpc_EMPTY() {
+        var search = String.format("/api/v1/products/history?eanUpc=0");
+        var entity = restTemplate.getForEntity(search, JsonNode.class);
+        assertEquals(HttpStatus.OK, entity.getStatusCode());
+        assertTrue(entity.getBody().isEmpty());
+    }
+
+    @Test
     void getProductByLocaleAndCatalogAnReferenceTest_OK() {
-        createDemoProductData();
         var search = String.format("/api/v1/products/history/%s/%s/%s", "local", "demo", "1");
         var entity = restTemplate.getForEntity(search, JsonNode.class);
         assertEquals(HttpStatus.OK, entity.getStatusCode());
@@ -109,12 +129,5 @@ class ProductControllerTest {
         var search = String.format("/api/v1/products/history/%s/%s/%s", "local", "fake-catalog", "1");
         var entity = restTemplate.getForEntity(search, JsonNode.class);
         assertEquals(HttpStatus.NOT_FOUND, entity.getStatusCode());
-    }
-
-    private void createDemoProductData() {
-        var searchResult = new SearchProductsDto("local", "demo", List.of(DemoDataUtils.createProductDto()), null);
-        productDataService.saveSearchResult(searchResult, "demo");
-        var mongodbCollection = mongoClient.getDatabase("prices-crawler-db").getCollection("products");
-        assertEquals(1, mongodbCollection.countDocuments());
     }
 }

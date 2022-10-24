@@ -3,6 +3,8 @@ package io.github.scafer.prices.crawler.content.util;
 import io.github.scafer.prices.crawler.content.common.dao.catalog.CatalogDao;
 import io.github.scafer.prices.crawler.content.common.dao.catalog.CategoryDao;
 import io.github.scafer.prices.crawler.content.common.dao.catalog.LocaleDao;
+import io.github.scafer.prices.crawler.content.common.dao.product.PriceDao;
+import io.github.scafer.prices.crawler.content.common.dao.product.ProductDao;
 import io.github.scafer.prices.crawler.content.common.dto.product.ProductDto;
 import io.github.scafer.prices.crawler.content.common.util.DateTimeUtils;
 
@@ -30,6 +32,31 @@ public class DemoDataUtils {
         locale.setId("local");
         locale.setName("Locale");
         return locale;
+    }
+
+    public static ProductDao getProductDao() {
+        var product = new ProductDao();
+        product.setId("local.demo.1");
+        product.setReference("1");
+        product.setLocale("local");
+        product.setCatalog("demo");
+        product.setName("Demo Product 1");
+        product.setBrand("Demo Brand 1");
+        product.setQuantity("1 /un");
+        product.setDescription("Demo Description 1");
+        product.setEanUpcList(List.of("123456789"));
+        product.setProductUrl("http://demo-product-1.local");
+        product.setImageUrl("http://demo-product-1.png");
+        product.setEanUpcList(List.of("1"));
+
+        var price = new PriceDao();
+        price.setRegularPrice("1,20€");
+        price.setCampaignPrice("1,00€");
+        price.setPricePerQuantity("1,00€ /un");
+        price.setDate(DateTimeUtils.getCurrentDateTime());
+        product.setPrices(List.of(price));
+
+        return product;
     }
 
     public static ProductDto createProductDto() {

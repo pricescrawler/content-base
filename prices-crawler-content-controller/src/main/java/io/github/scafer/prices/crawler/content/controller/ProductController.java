@@ -6,7 +6,7 @@ import io.github.scafer.prices.crawler.content.common.dto.product.search.SearchP
 import io.github.scafer.prices.crawler.content.common.dto.product.search.SearchProductsDto;
 import io.github.scafer.prices.crawler.content.common.dto.product.search.SearchQueryDto;
 import io.github.scafer.prices.crawler.content.common.util.IdUtils;
-import io.github.scafer.prices.crawler.content.repository.product.SimpleProductDataService;
+import io.github.scafer.prices.crawler.content.repository.product.service.SimpleProductDataService;
 import io.github.scafer.prices.crawler.content.service.product.ProductService;
 import io.github.scafer.prices.crawler.content.service.product.provider.ProductServiceProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -64,6 +64,12 @@ public class ProductController {
         }
 
         return Mono.zipDelayError(responses, objects -> new ArrayList(Arrays.asList(objects)));
+    }
+
+    @CrossOrigin
+    @GetMapping("/products/history")
+    public List<ProductDataDto> searchProductByEanUpc(@RequestParam String eanUpc) {
+        return productDataService.findProductsByEanUpc(eanUpc).stream().map(ProductDataDto::new).toList();
     }
 
     @CrossOrigin

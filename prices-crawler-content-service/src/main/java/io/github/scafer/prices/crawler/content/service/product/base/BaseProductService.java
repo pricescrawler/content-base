@@ -5,8 +5,8 @@ import io.github.scafer.prices.crawler.content.common.dao.catalog.LocaleDao;
 import io.github.scafer.prices.crawler.content.common.dto.product.ProductListItemDto;
 import io.github.scafer.prices.crawler.content.common.dto.product.search.SearchProductDto;
 import io.github.scafer.prices.crawler.content.common.dto.product.search.SearchProductsDto;
-import io.github.scafer.prices.crawler.content.repository.catalog.CatalogDataService;
-import io.github.scafer.prices.crawler.content.repository.product.ProductDataService;
+import io.github.scafer.prices.crawler.content.repository.catalog.service.CatalogDataService;
+import io.github.scafer.prices.crawler.content.repository.product.service.ProductDataService;
 import io.github.scafer.prices.crawler.content.service.product.ProductService;
 import io.github.scafer.prices.crawler.content.service.product.cache.ProductCacheService;
 import org.springframework.beans.factory.annotation.Value;
@@ -75,6 +75,11 @@ public abstract class BaseProductService implements ProductService {
     public Mono<SearchProductDto> searchProductByUrl(String productUrl) {
         if (isLocaleOrCatalogDisabled()) {
             return Mono.just(new SearchProductDto(localeName, catalogName, null));
+        }
+
+        if (productCacheService.isProductCachedByUrl(productUrl)) {
+            var cache = productCacheService.retrieveProductByUrl(productUrl);
+            return Mono.just(new SearchProductDto(localeName, catalogName, cache));
         }
 
         var result = searchItemByProductUrlLogic(productUrl)
