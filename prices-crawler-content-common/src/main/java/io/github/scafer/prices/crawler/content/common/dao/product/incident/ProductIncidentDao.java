@@ -18,8 +18,8 @@ public class ProductIncidentDao {
     private String id;
     private List<ProductDto> products;
     private String description;
-    private boolean merged = false;
-    private boolean closed = false;
+    private boolean isMerged = false;
+    private boolean isClosed = false;
     private int hits = 1;
     private List<String> searchTerms;
     private String created;
@@ -34,12 +34,12 @@ public class ProductIncidentDao {
     }
 
     public ProductIncidentDao closed() {
-        this.closed = true;
+        this.isClosed = true;
         return this;
     }
 
     public ProductIncidentDao merged() {
-        this.merged = true;
+        this.isMerged = true;
         return this;
     }
 
