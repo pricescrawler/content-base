@@ -8,18 +8,18 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Log4j2
 @Service
 public class LocalProductCacheService implements ProductCacheService {
 
-    private static final Map<String, ProductsCacheDto> cachedProducts = new HashMap<>();
+    private static final Map<String, ProductsCacheDto> cachedProducts = new ConcurrentHashMap<>();
 
     @Override
-    public void storeProductsList(String locale, String catalog, String reference, List<ProductDto> products) {
+    public void storeProductList(String locale, String catalog, String reference, List<ProductDto> products) {
         var key = IdUtils.parse(locale, catalog, reference);
         cachedProducts.computeIfAbsent(key, k -> new ProductsCacheDto(DateTimeUtils.getCurrentDateTime(), products));
     }

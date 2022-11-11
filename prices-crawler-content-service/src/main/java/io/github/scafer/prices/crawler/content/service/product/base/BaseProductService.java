@@ -126,7 +126,7 @@ public abstract class BaseProductService implements ProductService {
         }
 
         if (isCacheEnabled && isLocaleOrCatalogCacheEnabled()) {
-            productCacheService.storeProductsList(localeName, catalogName, query, searchProductsDto.getProducts());
+            productCacheService.storeProductList(localeName, catalogName, query, searchProductsDto.getProducts());
         }
 
         return searchProductsDto;
