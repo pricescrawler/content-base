@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
-import java.time.chrono.ChronoZonedDateTime;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class DateTimeUtils {
@@ -23,9 +22,9 @@ public class DateTimeUtils {
     }
 
     public static boolean isBetweenDates(String date, ZonedDateTime beforeDate, ZonedDateTime afterDate) {
-        var chronoZonedDateTime = ChronoZonedDateTime.from(LocalDateTime.parse(date).toLocalDate());
+        var zonedDateTime = ZonedDateTime.from(LocalDateTime.parse(date).toLocalDate());
 
-        return (beforeDate.isBefore(chronoZonedDateTime) || beforeDate.isEqual(chronoZonedDateTime)) &&
-                (afterDate.isAfter(chronoZonedDateTime) || afterDate.isEqual(chronoZonedDateTime));
+        return (beforeDate.isBefore(zonedDateTime) || beforeDate.isEqual(zonedDateTime)) &&
+                (afterDate.isAfter(zonedDateTime) || afterDate.isEqual(zonedDateTime));
     }
 }

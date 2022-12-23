@@ -1,4 +1,4 @@
-package io.github.scafer.prices.crawler.content.controller;
+package io.github.scafer.prices.crawler.content.controller.catalog;
 
 import io.github.scafer.prices.crawler.content.common.dto.catalog.LocaleDto;
 import io.github.scafer.prices.crawler.content.service.catalog.CatalogService;

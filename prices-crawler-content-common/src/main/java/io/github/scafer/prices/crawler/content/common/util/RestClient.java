@@ -3,7 +3,7 @@ package io.github.scafer.prices.crawler.content.common.util;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -27,7 +27,7 @@ public class RestClient<T> {
                         .build())
                 .headers(httpHeaders -> httpHeaders.addAll(headers))
                 .retrieve()
-                .onStatus(HttpStatus::isError, clientResponse -> Mono.empty())
+                .onStatus(HttpStatusCode::isError, clientResponse -> Mono.empty())
                 .bodyToMono(typeReference)
                 .timeout(Duration.ofSeconds(timeoutInSec))
                 .retry(numberOfRetries)
@@ -44,7 +44,7 @@ public class RestClient<T> {
                 .headers(httpHeaders -> httpHeaders.addAll(headers))
                 .body(Mono.just(body), String.class)
                 .retrieve()
-                .onStatus(HttpStatus::isError, clientResponse -> Mono.empty())
+                .onStatus(HttpStatusCode::isError, clientResponse -> Mono.empty())
                 .bodyToMono(typeReference)
                 .timeout(Duration.ofSeconds(timeoutInSec))
                 .retry(numberOfRetries)
