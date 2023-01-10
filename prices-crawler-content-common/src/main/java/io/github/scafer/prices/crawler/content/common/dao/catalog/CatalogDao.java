@@ -1,5 +1,7 @@
 package io.github.scafer.prices.crawler.content.common.dao.catalog;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -9,7 +11,9 @@ import java.util.List;
 import java.util.Map;
 
 @Data
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 @Document("catalogs")
 public class CatalogDao {
     @Id

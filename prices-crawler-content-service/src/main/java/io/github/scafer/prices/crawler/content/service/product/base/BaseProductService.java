@@ -48,14 +48,32 @@ public abstract class BaseProductService implements ProductService {
                 .ifPresent(value -> catalog = value);
     }
 
+    /**
+     * Performs the logic for searching for items by a given query.
+     *
+     * @param query the query to use for the search
+     * @return a CompletableFuture that completes with the {@link SearchProductsDto} object
+     */
     protected abstract CompletableFuture<SearchProductsDto> searchItemLogic(String query);
 
+    /**
+     * Performs the logic for searching for an item by its product URL.
+     *
+     * @param productUrl the product URL of the item to search for
+     * @return a CompletableFuture that completes with the {@link SearchProductDto} object
+     */
     protected abstract CompletableFuture<SearchProductDto> searchItemByProductUrlLogic(String productUrl);
 
+    /**
+     * Performs the logic for updating an item.
+     *
+     * @param productListItem the updated item
+     * @return a CompletableFuture that completes with the updated {@link ProductListItemDto} object
+     */
     protected abstract CompletableFuture<ProductListItemDto> updateItemLogic(ProductListItemDto productListItem);
 
     @Override
-    public Mono<SearchProductsDto> searchProduct(String query) {
+    public Mono<SearchProductsDto> searchProductByQuery(String query) {
         if (isLocaleOrCatalogDisabled()) {
             return Mono.just(new SearchProductsDto(localeName, catalogName, new ArrayList<>(), generateCatalogData()));
         }
@@ -72,7 +90,7 @@ public abstract class BaseProductService implements ProductService {
     }
 
     @Override
-    public Mono<SearchProductDto> searchProductByUrl(String productUrl) {
+    public Mono<SearchProductDto> searchProductByProductUrl(String productUrl) {
         if (isLocaleOrCatalogDisabled()) {
             return Mono.just(new SearchProductDto(localeName, catalogName, null));
         }
@@ -89,13 +107,12 @@ public abstract class BaseProductService implements ProductService {
     }
 
     @Override
-    public Mono<ProductListItemDto> updateProduct(ProductListItemDto productListItem) {
+    public Mono<ProductListItemDto> updateProductListItem(ProductListItemDto productListItem) {
         if (isLocaleOrCatalogDisabled()) {
             return Mono.just(productListItem);
         }
 
-        var result = updateItemLogic(productListItem);
-        return Mono.fromFuture(result);
+        return Mono.fromFuture(updateItemLogic(productListItem));
     }
 
     protected Map<String, Object> generateCatalogData() {
@@ -145,7 +162,7 @@ public abstract class BaseProductService implements ProductService {
     private boolean isLocaleOrCatalogDisabled() {
         if (locale != null) {
             if (!locale.isActive()) {
-                return !locale.isActive();
+                return true;
             }
 
             if (catalog != null) {

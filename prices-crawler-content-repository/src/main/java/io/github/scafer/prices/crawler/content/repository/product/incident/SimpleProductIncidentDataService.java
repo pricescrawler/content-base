@@ -10,6 +10,7 @@ import io.github.scafer.prices.crawler.content.repository.product.util.ProductUt
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Log4j2
@@ -24,7 +25,7 @@ public class SimpleProductIncidentDataService implements ProductIncidentDataServ
     }
 
     @Override
-    public CompletableFuture<Void> saveIncident(ProductDao product, ProductDto newProduct, String query) {
+    public CompletableFuture<Void> saveIncident(ProductDao product, ProductDto lastProduct, String query) {
         try {
             var optionalIncident = productIncidentDataRepository.findById(product.getId());
 
@@ -32,20 +33,26 @@ public class SimpleProductIncidentDataService implements ProductIncidentDataServ
                 var incident = optionalIncident.get();
                 var lastStoredPrice = incident.getProducts().get(incident.getProducts().size() - 1);
 
-                if (!DateTimeUtils.isSameDay(lastStoredPrice.getDate(), newProduct.getDate())) {
-                    incident.addNewProduct(newProduct);
+                if (!DateTimeUtils.isSameDay(lastStoredPrice.getDate(), lastProduct.getDate())) {
+                    incident.addProduct(lastProduct);
                 }
 
                 incident.incrementHits();
                 incident.setSearchTerms(ProductUtils.parseSearchTerms(incident.getSearchTerms(), query));
                 productIncidentDataRepository.save(incident);
             } else {
-                var productIncident = new ProductIncidentDao(product.getId(), newProduct);
-                productIncident.setSearchTerms(ProductUtils.parseSearchTerms(null, query));
+                var productIncident = ProductIncidentDao.builder()
+                        .id(product.getId())
+                        .products(List.of(lastProduct))
+                        .searchTerms(ProductUtils.parseSearchTerms(null, query))
+                        .created(DateTimeUtils.getCurrentDateTime())
+                        .updated(DateTimeUtils.getCurrentDateTime())
+                        .build();
+
                 productIncidentDataRepository.save(productIncident);
             }
         } catch (Exception exception) {
-            log.error("Product Incident Exception. Id - {}. Product - {}. Message - {}", product.getId(), newProduct.getReference(), exception.getMessage());
+            log.error("Product Incident Exception. Id - {}. Product - {}. Message - {}", product.getId(), lastProduct.getReference(), exception.getMessage());
         }
 
         return null;
@@ -63,11 +70,11 @@ public class SimpleProductIncidentDataService implements ProductIncidentDataServ
                 var product = optionalProduct.get();
                 product.incrementHits(productIncident.getHits());
 
-                for (var newProduct : productIncident.getProducts()) {
-                    product.updateFromProduct(newProduct);
-                    product.setPrices(ProductUtils.parsePricesHistory(product.getPrices(), new PriceDao(newProduct)));
+                for (var incident : productIncident.getProducts()) {
+                    product.updateFromProduct(incident);
+                    product.setPrices(ProductUtils.parsePricesHistory(product.getPrices(), new PriceDao(incident)));
                     product.setSearchTerms(ProductUtils.parseSearchTerms(product.getSearchTerms(), null));
-                    product.setEanUpcList(ProductUtils.parseEanUpcList(product.getEanUpcList(), newProduct.getEanUpcList()));
+                    product.setEanUpcList(ProductUtils.parseEanUpcList(product.getEanUpcList(), incident.getEanUpcList()));
                 }
 
                 productDataRepository.save(product);

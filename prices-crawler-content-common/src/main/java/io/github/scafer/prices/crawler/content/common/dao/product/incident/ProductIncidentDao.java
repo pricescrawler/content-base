@@ -1,7 +1,8 @@
 package io.github.scafer.prices.crawler.content.common.dao.product.incident;
 
 import io.github.scafer.prices.crawler.content.common.dto.product.ProductDto;
-import io.github.scafer.prices.crawler.content.common.util.DateTimeUtils;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -11,7 +12,9 @@ import java.util.List;
 import java.util.Map;
 
 @Data
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 @Document("product-incidents")
 public class ProductIncidentDao {
     @Id
@@ -25,13 +28,6 @@ public class ProductIncidentDao {
     private String created;
     private String updated;
     private Map<String, Object> data;
-
-    public ProductIncidentDao(String productId, ProductDto product) {
-        this.id = productId;
-        this.products = List.of(product);
-        this.created = DateTimeUtils.getCurrentDateTime();
-        this.updated = DateTimeUtils.getCurrentDateTime();
-    }
 
     public ProductIncidentDao closed() {
         this.isClosed = true;
@@ -47,7 +43,7 @@ public class ProductIncidentDao {
         this.hits++;
     }
 
-    public void addNewProduct(ProductDto newProduct) {
-        this.products.add(newProduct);
+    public void addProduct(ProductDto product) {
+        this.products.add(product);
     }
 }

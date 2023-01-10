@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @AutoConfigureDataMongo
 @EnableAutoConfiguration
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"ACTIVE_PROFILE=demo"})
-public class ProductSearchControllerTest {
+class ProductSearchControllerTest {
     private final String PRODUCTS_SEARCH = "/api/v1/products/search";
 
     @Autowired

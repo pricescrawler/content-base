@@ -1,6 +1,7 @@
 package io.github.scafer.prices.crawler.content.controller.product;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.github.scafer.prices.crawler.content.common.dto.product.parser.RawProductContentDto;
 import io.github.scafer.prices.crawler.content.repository.catalog.CatalogDataRepository;
 import io.github.scafer.prices.crawler.content.repository.catalog.CategoryDataRepository;
 import io.github.scafer.prices.crawler.content.repository.catalog.LocaleDataRepository;
@@ -17,13 +18,13 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.DirtiesContext;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DirtiesContext
 @AutoConfigureDataMongo
 @EnableAutoConfiguration
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"ACTIVE_PROFILE=demo"})
-class ProductHistoryControllerTest {
+class ProductContentParserControllerTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
@@ -56,32 +57,16 @@ class ProductHistoryControllerTest {
     }
 
     @Test
-    void getProductByEanUpc_OK() {
-        var search = String.format("/api/v1/products/history?eanUpc=123456789");
-        var entity = restTemplate.getForEntity(search, JsonNode.class);
-        assertEquals(HttpStatus.OK, entity.getStatusCode());
-        assertFalse(entity.getBody().isEmpty());
-    }
-
-    @Test
-    void getProductByEanUpc_EMPTY() {
-        var search = String.format("/api/v1/products/history?eanUpc=0");
-        var entity = restTemplate.getForEntity(search, JsonNode.class);
-        assertEquals(HttpStatus.OK, entity.getStatusCode());
-        assertTrue(entity.getBody().isEmpty());
-    }
-
-    @Test
-    void getProductByLocaleAndCatalogAnReferenceTest_OK() {
-        var search = String.format("/api/v1/products/history/%s/%s/%s", "local", "demo", "1");
-        var entity = restTemplate.getForEntity(search, JsonNode.class);
+    void parseProductFromContent_OK() {
+        var body = RawProductContentDto.builder().catalog("local.demo").build();
+        var entity = restTemplate.postForEntity("/api/v1/products/parser", body, JsonNode.class);
         assertEquals(HttpStatus.OK, entity.getStatusCode());
     }
 
     @Test
-    void getProductByLocaleAndCatalogAnReferenceTest_NOTFOUND() {
-        var search = String.format("/api/v1/products/history/%s/%s/%s", "local", "fake-catalog", "1");
-        var entity = restTemplate.getForEntity(search, JsonNode.class);
-        assertEquals(HttpStatus.NOT_FOUND, entity.getStatusCode());
+    void parseProductListFromContent_OK() {
+        var body = RawProductContentDto.builder().catalog("local.demo").build();
+        var entity = restTemplate.postForEntity("/api/v1/products/parser/list", body, JsonNode.class);
+        assertEquals(HttpStatus.OK, entity.getStatusCode());
     }
 }

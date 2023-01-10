@@ -14,7 +14,7 @@ public class BackgroundService {
         this.productCacheService = productCacheService;
     }
 
-    @Scheduled(fixedRateString = "${prices.crawler.background.service.refreshInterval:3600000}")
+    @Scheduled(cron = "${prices.crawler.background.service.cron:0 0 0 * * *}")
     public void startBackgroundService() {
         log.info("Starting Background Service");
         productCacheService.clearOutdatedProducts();

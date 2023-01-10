@@ -12,67 +12,66 @@ import java.util.List;
 
 public class DemoDataUtils {
     public static CatalogDao getCatalogDao() {
-        var catalog = new CatalogDao();
-        catalog.setId("local.demo");
-        catalog.setName("Demo");
-        catalog.setLocales(List.of("local"));
-        catalog.setCategories(List.of("demo-category"));
-        return catalog;
+        return CatalogDao.builder()
+                .id("local.demo")
+                .name("Demo")
+                .locales(List.of("local"))
+                .categories(List.of("demo-category"))
+                .build();
     }
 
     public static CategoryDao getCategoryDao() {
-        var category = new CategoryDao();
-        category.setId("demo-category");
-        category.setName("Demo Category");
-        return category;
+        return CategoryDao.builder()
+                .id("demo-category")
+                .name("Demo Category")
+                .build();
     }
 
     public static LocaleDao getLocaleDao() {
-        var locale = new LocaleDao();
-        locale.setId("local");
-        locale.setName("Locale");
-        return locale;
+        return LocaleDao.builder()
+                .id("local")
+                .name("Locale")
+                .build();
     }
 
     public static ProductDao getProductDao() {
-        var product = new ProductDao();
-        product.setId("local.demo.1");
-        product.setReference("1");
-        product.setLocale("local");
-        product.setCatalog("demo");
-        product.setName("Demo Product 1");
-        product.setBrand("Demo Brand 1");
-        product.setQuantity("1 /un");
-        product.setDescription("Demo Description 1");
-        product.setEanUpcList(List.of("123456789"));
-        product.setProductUrl("http://demo-product-1.local");
-        product.setImageUrl("http://demo-product-1.png");
-        product.setEanUpcList(List.of("1"));
+        var price = PriceDao.builder()
+                .regularPrice("1,20 €")
+                .campaignPrice("1,00 €")
+                .pricePerQuantity("1,00 € /un")
+                .date(DateTimeUtils.getCurrentDateTime())
+                .build();
 
-        var price = new PriceDao();
-        price.setRegularPrice("1,20€");
-        price.setCampaignPrice("1,00€");
-        price.setPricePerQuantity("1,00€ /un");
-        price.setDate(DateTimeUtils.getCurrentDateTime());
-        product.setPrices(List.of(price));
-
-        return product;
+        return ProductDao.builder()
+                .id("local.demo.1")
+                .reference("1")
+                .locale("local")
+                .catalog("demo")
+                .name("Demo Product 1")
+                .brand("Demo Brand 1")
+                .quantity("1 /un")
+                .description("Demo Description 1")
+                .eanUpcList(List.of("123456789"))
+                .productUrl("http://demo-product-1.local")
+                .imageUrl("http://demo-product-1.png")
+                .prices(List.of(price))
+                .build();
     }
 
     public static ProductDto createProductDto() {
-        var productResult = new ProductDto();
-        productResult.setReference("1");
-        productResult.setName("Demo Product 1");
-        productResult.setBrand("Demo Brand 1");
-        productResult.setQuantity("1 /un");
-        productResult.setDescription("Demo Description 1");
-        productResult.setEanUpcList(List.of("123456789"));
-        productResult.setDate(DateTimeUtils.getCurrentDateTime());
-        productResult.setRegularPrice("1,20€");
-        productResult.setCampaignPrice("1,00€");
-        productResult.setPricePerQuantity("1,00€ /un");
-        productResult.setProductUrl("http://demo-product-1.local");
-        productResult.setImageUrl("http://demo-product-1.png");
-        return productResult;
+        return ProductDto.builder()
+                .reference("1")
+                .name("Demo Product 1")
+                .brand("Demo Brand 1")
+                .quantity("1 /un")
+                .description("Demo Description 1")
+                .eanUpcList(List.of("123456789"))
+                .regularPrice("1,20 €")
+                .campaignPrice("1,00 €")
+                .pricePerQuantity("1,00 € /un")
+                .productUrl("http://demo-product-1.local")
+                .imageUrl("http://demo-product-1.png")
+                .date(DateTimeUtils.getCurrentDateTime())
+                .build();
     }
 }

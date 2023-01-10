@@ -37,8 +37,8 @@ public class SimpleCatalogService implements CatalogService {
     }
 
     @Override
-    public Optional<LocaleDto> searchLocaleById(String locale) {
-        var optionalLocale = localeDataRepository.findById(locale).map(LocaleDto::new);
+    public Optional<LocaleDto> searchLocaleById(String id) {
+        var optionalLocale = localeDataRepository.findById(id).map(LocaleDto::new);
 
         if (optionalLocale.isPresent()) {
             var localeDto = optionalLocale.get();

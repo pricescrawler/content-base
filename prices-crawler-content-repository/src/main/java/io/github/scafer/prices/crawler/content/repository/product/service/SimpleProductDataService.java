@@ -55,34 +55,34 @@ public class SimpleProductDataService implements ProductDataService {
                     CompletableFuture.supplyAsync(() -> productIncidentDataService.saveIncident(productData, productDto, query));
                 }
             } else {
-                createNewProductData(searchProducts.getLocale(), searchProducts.getCatalog(), productDto, query);
+                createProductData(searchProducts.getLocale(), searchProducts.getCatalog(), productDto, query);
             }
         }
 
         return null;
     }
 
-    private void createNewProductData(String locale, String catalog, ProductDto product, String query) {
+    private void createProductData(String locale, String catalog, ProductDto product, String query) {
         var productData = new ProductDao(locale, catalog, product);
         productData.setPrices(List.of(new PriceDao(product)));
         productData.setSearchTerms(ProductUtils.parseSearchTerms(null, query));
         productDataRepository.save(productData);
     }
 
-    private ProductDao updatedProductData(ProductDao productDao, ProductDto productDto, String query) {
-        productDao.updateFromProduct(productDto).incrementHits();
-        productDao.setPrices(ProductUtils.parsePricesHistory(productDao.getPrices(), new PriceDao(productDto)));
-        productDao.setSearchTerms(ProductUtils.parseSearchTerms(productDao.getSearchTerms(), query));
-        productDao.setEanUpcList(ProductUtils.parseEanUpcList(productDao.getEanUpcList(), productDto.getEanUpcList()));
-        return productDao;
+    private ProductDao updatedProductData(ProductDao product, ProductDto lastProduct, String query) {
+        product.updateFromProduct(lastProduct).incrementHits();
+        product.setPrices(ProductUtils.parsePricesHistory(product.getPrices(), new PriceDao(lastProduct)));
+        product.setSearchTerms(ProductUtils.parseSearchTerms(product.getSearchTerms(), query));
+        product.setEanUpcList(ProductUtils.parseEanUpcList(product.getEanUpcList(), lastProduct.getEanUpcList()));
+        return product;
     }
 
-    private boolean isProductDataEquals(ProductDao product, ProductDto newProduct) {
+    private boolean isProductDataEquals(ProductDao product, ProductDto lastProduct) {
         return isProductIncidentEnabled &&
-                (product.getName() == null || product.getName().equalsIgnoreCase(newProduct.getName())) &&
-                (product.getBrand() == null || product.getBrand().equalsIgnoreCase(newProduct.getBrand())) &&
-                (product.getProductUrl() == null || product.getProductUrl().equalsIgnoreCase(newProduct.getProductUrl())) &&
-                (product.getDescription() == null || product.getDescription().equalsIgnoreCase(newProduct.getDescription())) &&
-                (product.getEanUpcList() == null || new HashSet<>(product.getEanUpcList()).containsAll(newProduct.getEanUpcList()));
+                (product.getName() == null || product.getName().equalsIgnoreCase(lastProduct.getName())) &&
+                (product.getBrand() == null || product.getBrand().equalsIgnoreCase(lastProduct.getBrand())) &&
+                (product.getProductUrl() == null || product.getProductUrl().equalsIgnoreCase(lastProduct.getProductUrl())) &&
+                (product.getDescription() == null || product.getDescription().equalsIgnoreCase(lastProduct.getDescription())) &&
+                (product.getEanUpcList() == null || new HashSet<>(product.getEanUpcList()).containsAll(lastProduct.getEanUpcList()));
     }
 }

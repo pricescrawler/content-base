@@ -15,8 +15,8 @@ import java.util.Arrays;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1")
-@ConditionalOnProperty("prices.crawler.product.controller.enabled")
+@RequestMapping("/api/v1/products/list")
+@ConditionalOnProperty("prices.crawler.controller.product.list.enabled")
 public class ProductListController {
     private final ProductServiceProvider productServiceProvider;
 
@@ -25,13 +25,13 @@ public class ProductListController {
     }
 
     @CrossOrigin
-    @PostMapping("/products/list/update")
+    @PostMapping("/update")
     public Mono<List<ProductListItemDto>> updateProducts(@RequestBody List<ProductListItemDto> productList) {
         var responses = new ArrayList<Mono<ProductListItemDto>>();
 
         for (var item : productList) {
             var productService = getProductServiceFromCatalog(IdUtils.parse(item.getLocale(), item.getCatalog()));
-            responses.add(productService.updateProduct(item));
+            responses.add(productService.updateProductListItem(item));
         }
 
         return Mono.zipDelayError(responses, objects -> new ArrayList(Arrays.asList(objects)));

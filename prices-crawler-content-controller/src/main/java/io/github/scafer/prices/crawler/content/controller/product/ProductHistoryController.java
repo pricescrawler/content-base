@@ -12,8 +12,8 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1")
-@ConditionalOnProperty("prices.crawler.product.controller.enabled")
+@RequestMapping("/api/v1/products/history")
+@ConditionalOnProperty("prices.crawler.controller.product.history.enabled")
 public class ProductHistoryController {
     private final ProductDataService productDataService;
 
@@ -22,20 +22,18 @@ public class ProductHistoryController {
     }
 
     @CrossOrigin
-    @GetMapping("/products/history")
+    @GetMapping
     public List<ProductDataDto> searchProductByEanUpc(@RequestParam String eanUpc) {
         return productDataService.findProductsByEanUpc(eanUpc).stream().map(ProductDataDto::new).toList();
     }
 
     @CrossOrigin
-    @GetMapping("/products/history/{locale}/{catalog}/{reference}")
+    @GetMapping("/{locale}/{catalog}/{reference}")
     public ProductDataDto productHistory(@PathVariable String locale, @PathVariable String catalog, @PathVariable String reference,
                                          @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startDate,
                                          @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime endDate) {
         return productDataService.findProduct(locale, catalog, reference)
-                .map(value ->
-                        new ProductDataDto(value).withPrices(startDate, endDate))
-                .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("%s product reference not found", reference)));
+                .map(value -> new ProductDataDto(value).withPrices(startDate, endDate))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("%s product reference not found", reference)));
     }
 }

@@ -3,13 +3,17 @@ package io.github.scafer.prices.crawler.content.common.dto.product;
 import io.github.scafer.prices.crawler.content.common.dao.product.PriceDao;
 import io.github.scafer.prices.crawler.content.common.util.DataMapUtils;
 import io.github.scafer.prices.crawler.content.common.util.DateTimeUtils;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Map;
 
 @Data
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class PriceDto {
     private String regularPrice;
     private String campaignPrice;

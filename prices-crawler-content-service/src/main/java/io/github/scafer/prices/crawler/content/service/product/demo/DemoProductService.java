@@ -5,6 +5,7 @@ import io.github.scafer.prices.crawler.content.common.dto.product.ProductListIte
 import io.github.scafer.prices.crawler.content.common.dto.product.search.SearchProductDto;
 import io.github.scafer.prices.crawler.content.common.dto.product.search.SearchProductsDto;
 import io.github.scafer.prices.crawler.content.common.util.DateTimeUtils;
+import io.github.scafer.prices.crawler.content.common.util.IdUtils;
 import io.github.scafer.prices.crawler.content.repository.catalog.service.CatalogDataService;
 import io.github.scafer.prices.crawler.content.repository.product.service.ProductDataService;
 import io.github.scafer.prices.crawler.content.service.product.base.BaseProductService;
@@ -26,14 +27,14 @@ public class DemoProductService extends BaseProductService {
 
     @Override
     protected CompletableFuture<SearchProductsDto> searchItemLogic(String query) {
-        var productsResult = getDemoProducts();
+        var productsResult = parseProductsFromContent(null, DateTimeUtils.getCurrentDateTime());
         return CompletableFuture.completedFuture(new SearchProductsDto(localeName, catalogName, productsResult, generateCatalogData()));
     }
 
     @Override
     protected CompletableFuture<SearchProductDto> searchItemByProductUrlLogic(String productUrl) {
-        var demoProducts = getDemoProducts();
-        return CompletableFuture.completedFuture(new SearchProductDto(localeName, catalogName, demoProducts.get(0)));
+        var demoProduct = parseProductFromContent(null, productUrl, DateTimeUtils.getCurrentDateTime());
+        return CompletableFuture.completedFuture(new SearchProductDto(localeName, catalogName, demoProduct));
     }
 
     @Override
@@ -41,21 +42,27 @@ public class DemoProductService extends BaseProductService {
         return CompletableFuture.completedFuture(productListItem);
     }
 
-    private List<ProductDto> getDemoProducts() {
-        var product = new ProductDto();
-        product.setReference("1");
-        product.setName("Demo Product 1");
-        product.setBrand("Demo Brand 1");
-        product.setQuantity("1 /un");
-        product.setDescription("Demo Description 1");
-        product.setEanUpcList(List.of("123456789"));
-        product.setDate(DateTimeUtils.getCurrentDateTime());
-        product.setRegularPrice("1,20€");
-        product.setCampaignPrice("1,00€");
-        product.setPricePerQuantity("1,00€ /un");
-        product.setProductUrl("http://demo-product-1.local");
-        product.setImageUrl("http://demo-product-1.png");
+    @Override
+    public List<ProductDto> parseProductsFromContent(String content, String dateTime) {
+        return List.of(parseProductFromContent(content, null, dateTime));
+    }
 
-        return List.of(product);
+    @Override
+    public ProductDto parseProductFromContent(String content, String query, String dateTime) {
+        return ProductDto.builder()
+                .id(IdUtils.parse(localeName, catalogName, "1"))
+                .reference("1")
+                .name("Demo Product 1")
+                .brand("Demo Brand 1")
+                .quantity("1 /un")
+                .description("Demo Description 1")
+                .eanUpcList(List.of("123456789"))
+                .date(dateTime)
+                .regularPrice("1,20 €")
+                .campaignPrice("1,00 €")
+                .pricePerQuantity("1,00 € /un")
+                .productUrl("http://demo-product-1.local")
+                .imageUrl("http://demo-product-1.png")
+                .build();
     }
 }

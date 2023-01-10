@@ -26,9 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @AutoConfigureDataMongo
 @EnableAutoConfiguration
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"ACTIVE_PROFILE=demo"})
-public class ProductListControllerTest {
-    private final String PRODUCTS_SEARCH = "/api/v1/products/search";
-
+class ProductListControllerTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
@@ -62,10 +60,13 @@ public class ProductListControllerTest {
 
     @Test
     void updateProductsTest_OK() {
-        var updateProducts = new SearchProductDto();
-        updateProducts.setLocale("local");
-        updateProducts.setCatalog("demo");
-        updateProducts.setProduct(DemoDataUtils.createProductDto());
+        var updateProducts = SearchProductDto.builder()
+                .locale("local")
+                .catalog("demo")
+                .product(DemoDataUtils.createProductDto())
+                .build();
+        new SearchProductDto();
+
         var entity = restTemplate.postForEntity("/api/v1/products/list/update", List.of(updateProducts), JsonNode.class);
         assertEquals(HttpStatus.OK, entity.getStatusCode());
     }

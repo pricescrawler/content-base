@@ -3,6 +3,8 @@ package io.github.scafer.prices.crawler.content.common.dao.product;
 import io.github.scafer.prices.crawler.content.common.dto.product.ProductDto;
 import io.github.scafer.prices.crawler.content.common.util.DateTimeUtils;
 import io.github.scafer.prices.crawler.content.common.util.IdUtils;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -12,7 +14,9 @@ import java.util.List;
 import java.util.Map;
 
 @Data
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 @Document("products")
 public class ProductDao {
     @Id
@@ -35,25 +39,25 @@ public class ProductDao {
     private List<PriceDao> prices;
     private Map<String, Object> data;
 
-    public ProductDao(String locale, String catalog, ProductDto productDto) {
+    public ProductDao(String locale, String catalog, ProductDto product) {
         this.locale = locale;
         this.catalog = catalog;
         this.created = DateTimeUtils.getCurrentDateTime();
-        updateFromProduct(productDto).incrementHits();
+        updateFromProduct(product).incrementHits();
     }
 
-    public ProductDao updateFromProduct(ProductDto productDto) {
-        this.id = IdUtils.parse(getLocale(), getCatalog(), productDto.getReference());
-        this.reference = productDto.getReference();
-        this.name = productDto.getName();
-        this.brand = productDto.getBrand();
-        this.quantity = productDto.getQuantity();
-        this.description = productDto.getDescription();
-        this.imageUrl = productDto.getImageUrl();
-        this.productUrl = productDto.getProductUrl();
-        this.eanUpcList = productDto.getEanUpcList();
+    public ProductDao updateFromProduct(ProductDto product) {
+        this.id = IdUtils.parse(getLocale(), getCatalog(), product.getReference());
+        this.reference = product.getReference();
+        this.name = product.getName();
+        this.brand = product.getBrand();
+        this.quantity = product.getQuantity();
+        this.description = product.getDescription();
+        this.imageUrl = product.getImageUrl();
+        this.productUrl = product.getProductUrl();
+        this.eanUpcList = product.getEanUpcList();
         this.updated = DateTimeUtils.getCurrentDateTime();
-        this.data = productDto.getData();
+        this.data = product.getData();
         return this;
     }
 

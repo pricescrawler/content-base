@@ -10,8 +10,8 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1")
-@ConditionalOnProperty("prices.crawler.catalog.controller.enabled")
+@RequestMapping("/api/v1/locales")
+@ConditionalOnProperty("prices.crawler.controller.catalog.enabled")
 public class CatalogController {
     private final CatalogService catalogService;
 
@@ -20,13 +20,13 @@ public class CatalogController {
     }
 
     @CrossOrigin
-    @GetMapping("/locales")
+    @GetMapping
     public List<LocaleDto> getLocales() {
         return catalogService.searchLocales();
     }
 
     @CrossOrigin
-    @GetMapping("/locales/{locale}")
+    @GetMapping("/{locale}")
     public LocaleDto getLocale(@PathVariable String locale) {
         return catalogService.searchLocaleById(locale)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("%s locale not found", locale)));

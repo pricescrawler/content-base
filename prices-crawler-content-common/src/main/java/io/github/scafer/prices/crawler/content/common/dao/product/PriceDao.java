@@ -1,15 +1,17 @@
 package io.github.scafer.prices.crawler.content.common.dao.product;
 
 import io.github.scafer.prices.crawler.content.common.dto.product.ProductDto;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.text.SimpleDateFormat;
-import java.time.ZonedDateTime;
 import java.util.Map;
 
 @Data
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class PriceDao {
     private String regularPrice;
     private String campaignPrice;
@@ -18,28 +20,12 @@ public class PriceDao {
     private String date;
     private Map<String, Object> data;
 
-    public PriceDao(ProductDto productDto) {
-        this.regularPrice = productDto.getRegularPrice();
-        this.campaignPrice = productDto.getCampaignPrice();
-        this.pricePerQuantity = productDto.getPricePerQuantity();
-        this.quantity = productDto.getQuantity() == null || productDto.getQuantity().isEmpty() ? productDto.getName() : productDto.getQuantity();
-        this.date = productDto.getDate();
-        this.data = productDto.getData();
-    }
-
-    public String getDate() {
-        try {
-            return this.date;
-        } catch (Exception exception) {
-            return String.valueOf(ZonedDateTime.parse(new SimpleDateFormat("yyy/MM/dd HH:mm:ss").format(this.date)));
-        }
-    }
-
-    public void setDate(String date) {
-        try {
-            this.date = date;
-        } catch (Exception exception) {
-            this.date = String.valueOf(ZonedDateTime.parse(new SimpleDateFormat("yyy/MM/dd HH:mm:ss").format(date)));
-        }
+    public PriceDao(ProductDto product) {
+        this.regularPrice = product.getRegularPrice();
+        this.campaignPrice = product.getCampaignPrice();
+        this.pricePerQuantity = product.getPricePerQuantity();
+        this.quantity = product.getQuantity() == null || product.getQuantity().isEmpty() ? product.getName() : product.getQuantity();
+        this.date = product.getDate();
+        this.data = product.getData();
     }
 }

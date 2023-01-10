@@ -3,16 +3,19 @@ package io.github.scafer.prices.crawler.content.common.dto.product;
 import io.github.scafer.prices.crawler.content.common.dao.product.ProductDao;
 import io.github.scafer.prices.crawler.content.common.util.DataMapUtils;
 import io.github.scafer.prices.crawler.content.common.util.DateTimeUtils;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 @Data
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class ProductDataDto {
     private String locale;
     private String catalog;
@@ -48,18 +51,8 @@ public class ProductDataDto {
             return this;
         }
 
-        try {
-            var filteredPrices = new ArrayList<PriceDto>();
+        this.getPrices().removeIf(price -> !DateTimeUtils.isBetweenDates(price.getDate(), startDate, endDate));
 
-            for (var price : this.getPrices()) {
-                if (DateTimeUtils.isBetweenDates(price.getDate().toString(), startDate, endDate)) {
-                    filteredPrices.add(price);
-                }
-            }
-            this.prices = filteredPrices;
-            return this;
-        } catch (Exception ignore) {
-            return this;
-        }
+        return this;
     }
 }

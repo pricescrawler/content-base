@@ -2,6 +2,8 @@ package io.github.scafer.prices.crawler.content.common.dto.catalog;
 
 import io.github.scafer.prices.crawler.content.common.dao.catalog.LocaleDao;
 import io.github.scafer.prices.crawler.content.common.util.DataMapUtils;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -9,7 +11,9 @@ import java.util.List;
 import java.util.Map;
 
 @Data
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class LocaleDto {
     private String id;
     private String name;

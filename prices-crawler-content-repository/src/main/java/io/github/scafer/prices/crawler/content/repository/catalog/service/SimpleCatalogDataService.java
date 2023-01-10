@@ -20,12 +20,12 @@ public class SimpleCatalogDataService implements CatalogDataService {
     }
 
     @Override
-    public Optional<LocaleDao> findLocaleById(String locale) {
-        return localeDataRepository.findById(locale);
+    public Optional<LocaleDao> findLocaleById(String id) {
+        return localeDataRepository.findById(id);
     }
 
     @Override
-    public Optional<CatalogDao> findCatalogByIdAndLocaleId(String catalog, String locale) {
-        return catalogDataRepository.findById(IdUtils.parse(locale, catalog));
+    public Optional<CatalogDao> findCatalogByIdAndLocaleId(String id, String localeId) {
+        return catalogDataRepository.findById(IdUtils.parse(localeId, id));
     }
 }

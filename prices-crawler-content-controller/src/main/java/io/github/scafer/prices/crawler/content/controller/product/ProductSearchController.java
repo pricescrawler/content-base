@@ -14,11 +14,11 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1")
-@ConditionalOnProperty("prices.crawler.product.controller.enabled")
+@RequestMapping("/api/v1/products/search")
+@ConditionalOnProperty("prices.crawler.controller.product.search.enabled")
 public class ProductSearchController {
     private final ProductServiceProvider productServiceProvider;
 
@@ -27,22 +27,22 @@ public class ProductSearchController {
     }
 
     @CrossOrigin
-    @PostMapping("/products/search")
-    public Mono<Collection<SearchProductsDto>> searchProducts(@RequestBody SearchQueryDto searchQuery) {
+    @PostMapping
+    public Mono<List<SearchProductsDto>> searchProducts(@RequestBody SearchQueryDto searchQuery) {
         var responses = new ArrayList<Mono<SearchProductsDto>>();
 
         for (String catalog : searchQuery.getCatalogs()) {
             var productService = getProductServiceFromCatalog(catalog);
-            responses.add(productService.searchProduct(searchQuery.getQuery()));
+            responses.add(productService.searchProductByQuery(searchQuery.getQuery()));
         }
 
         return Mono.zipDelayError(responses, objects -> new ArrayList(Arrays.asList(objects)));
     }
 
     @CrossOrigin
-    @GetMapping("/products/search/{locale}/{catalog}/{productUrl}")
+    @GetMapping("/{locale}/{catalog}/{productUrl}")
     public Mono<SearchProductDto> searchProduct(@PathVariable String locale, @PathVariable String catalog, @PathVariable String productUrl) {
-        return getProductServiceFromCatalog(IdUtils.parse(locale, catalog)).searchProductByUrl(productUrl);
+        return getProductServiceFromCatalog(IdUtils.parse(locale, catalog)).searchProductByProductUrl(productUrl);
     }
 
     private ProductService getProductServiceFromCatalog(String catalogAlias) {

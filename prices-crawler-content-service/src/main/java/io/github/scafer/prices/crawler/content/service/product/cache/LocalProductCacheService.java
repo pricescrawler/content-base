@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class LocalProductCacheService implements ProductCacheService {
 
+    public static final String PRODUCTS_CACHE_REMOVING = "Products Cache: removing {}";
     private static final Map<String, ProductsCacheDto> cachedProducts = new ConcurrentHashMap<>();
 
     @Override
@@ -37,7 +38,7 @@ public class LocalProductCacheService implements ProductCacheService {
                     isCached = true;
                 } else {
                     cachedProducts.remove(key);
-                    log.info("Products Cache: removing {}", key);
+                    log.info(PRODUCTS_CACHE_REMOVING, key);
                 }
             } catch (Exception ex) {
                 log.error("Products Cache: error - {}", ex.getMessage());
@@ -52,15 +53,12 @@ public class LocalProductCacheService implements ProductCacheService {
         var isCached = false;
 
         for (var element : cachedProducts.entrySet()) {
-
             for (var product : element.getValue().getProducts()) {
-
                 if (product.getProductUrl().equals(url)) {
-
                     if (DateTimeUtils.isSameDay(DateTimeUtils.getCurrentDateTime(), product.getDate())) {
                         return true;
                     } else {
-                        log.info("Products Cache: removing {}", url);
+                        log.info(PRODUCTS_CACHE_REMOVING, url);
                         cachedProducts.remove(element.getKey());
                     }
                 }
@@ -90,11 +88,8 @@ public class LocalProductCacheService implements ProductCacheService {
 
     @Override
     public ProductDto retrieveProductByUrl(String url) {
-        var productDto = new ProductDto();
-
         for (var element : cachedProducts.entrySet()) {
             for (var product : element.getValue().getProducts()) {
-
                 if (product.getProductUrl().equals(url)) {
                     log.info("Products Cache: returning {}", url);
                     return product;
@@ -102,15 +97,14 @@ public class LocalProductCacheService implements ProductCacheService {
             }
         }
 
-        return productDto;
+        return ProductDto.builder().build();
     }
 
     @Override
     public void clearOutdatedProducts() {
         for (var entry : cachedProducts.entrySet()) {
-
             if (!DateTimeUtils.isSameDay(DateTimeUtils.getCurrentDateTime(), entry.getValue().getDate())) {
-                log.info("Products Cache: removing {}", entry.getKey());
+                log.info(PRODUCTS_CACHE_REMOVING, entry.getKey());
                 cachedProducts.remove(entry.getKey());
             }
         }
