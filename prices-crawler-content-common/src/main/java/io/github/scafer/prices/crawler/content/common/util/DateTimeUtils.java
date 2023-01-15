@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 
@@ -26,5 +27,12 @@ public class DateTimeUtils {
 
         return (beforeDate.isBefore(zonedDateTime) || beforeDate.isEqual(zonedDateTime)) &&
                 (afterDate.isAfter(zonedDateTime) || afterDate.isEqual(zonedDateTime));
+    }
+
+    public static Duration durationBetweenDates(String startDate, String endDate) {
+        return Duration.between(
+                ZonedDateTime.parse(startDate),
+                ZonedDateTime.parse(endDate)
+        );
     }
 }

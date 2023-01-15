@@ -1,4 +1,4 @@
-package io.github.scafer.prices.crawler.content.repository.catalog.service;
+package io.github.scafer.prices.crawler.content.repository.catalog;
 
 import io.github.scafer.prices.crawler.content.common.dao.catalog.CatalogDao;
 import io.github.scafer.prices.crawler.content.common.dao.catalog.LocaleDao;

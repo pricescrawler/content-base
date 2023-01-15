@@ -1,7 +1,7 @@
 package io.github.scafer.prices.crawler.content.controller.product;
 
 import io.github.scafer.prices.crawler.content.common.dto.product.ProductDataDto;
-import io.github.scafer.prices.crawler.content.repository.product.service.ProductDataService;
+import io.github.scafer.prices.crawler.content.repository.product.ProductDataService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;

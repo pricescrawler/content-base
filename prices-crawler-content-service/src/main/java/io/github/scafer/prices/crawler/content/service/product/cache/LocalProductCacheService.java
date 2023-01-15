@@ -20,13 +20,13 @@ public class LocalProductCacheService implements ProductCacheService {
     private static final Map<String, ProductsCacheDto> cachedProducts = new ConcurrentHashMap<>();
 
     @Override
-    public void storeProductList(String locale, String catalog, String reference, List<ProductDto> products) {
+    public void cacheProductSearchResult(String locale, String catalog, String reference, List<ProductDto> products) {
         var key = IdUtils.parse(locale, catalog, reference);
         cachedProducts.computeIfAbsent(key, k -> new ProductsCacheDto(DateTimeUtils.getCurrentDateTime(), products));
     }
 
     @Override
-    public boolean isProductListCached(String locale, String catalog, String reference) {
+    public boolean isProductSearchResultCached(String locale, String catalog, String reference) {
         var isCached = false;
         var key = IdUtils.parse(locale, catalog, reference);
 
@@ -49,7 +49,7 @@ public class LocalProductCacheService implements ProductCacheService {
     }
 
     @Override
-    public boolean isProductCachedByUrl(String url) {
+    public boolean isProductSearchResultByUrl(String url) {
         var isCached = false;
 
         for (var element : cachedProducts.entrySet()) {
@@ -69,7 +69,7 @@ public class LocalProductCacheService implements ProductCacheService {
     }
 
     @Override
-    public List<ProductDto> retrieveProductsList(String locale, String catalog, String reference) {
+    public List<ProductDto> retrieveProductSearchResult(String locale, String catalog, String reference) {
         List<ProductDto> products = new ArrayList<>();
         var key = IdUtils.parse(locale, catalog, reference);
 
@@ -87,7 +87,7 @@ public class LocalProductCacheService implements ProductCacheService {
     }
 
     @Override
-    public ProductDto retrieveProductByUrl(String url) {
+    public ProductDto retrieveProductSearchResultByUrl(String url) {
         for (var element : cachedProducts.entrySet()) {
             for (var product : element.getValue().getProducts()) {
                 if (product.getProductUrl().equals(url)) {
@@ -101,7 +101,7 @@ public class LocalProductCacheService implements ProductCacheService {
     }
 
     @Override
-    public void clearOutdatedProducts() {
+    public void deleteOutdatedProductSearchResults() {
         for (var entry : cachedProducts.entrySet()) {
             if (!DateTimeUtils.isSameDay(DateTimeUtils.getCurrentDateTime(), entry.getValue().getDate())) {
                 log.info(PRODUCTS_CACHE_REMOVING, entry.getKey());

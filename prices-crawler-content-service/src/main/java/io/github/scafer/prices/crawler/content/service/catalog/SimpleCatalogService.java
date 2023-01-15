@@ -15,8 +15,8 @@ import java.util.Optional;
 
 @Service
 public class SimpleCatalogService implements CatalogService {
-    private final CatalogDataRepository catalogDataRepository;
     private final LocaleDataRepository localeDataRepository;
+    private final CatalogDataRepository catalogDataRepository;
     private final CategoryDataRepository categoryDataRepository;
 
     public SimpleCatalogService(CatalogDataRepository catalogDataRepository, LocaleDataRepository localeDataRepository, CategoryDataRepository categoryDataRepository) {
