@@ -3,6 +3,7 @@ package io.github.scafer.prices.crawler.content.controller.product;
 import io.github.scafer.prices.crawler.content.common.dto.product.ProductListItemDto;
 import io.github.scafer.prices.crawler.content.common.util.IdUtils;
 import io.github.scafer.prices.crawler.content.service.product.ProductService;
+import io.github.scafer.prices.crawler.content.service.product.list.ProductListService;
 import io.github.scafer.prices.crawler.content.service.product.provider.ProductServiceProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
@@ -19,22 +20,36 @@ import java.util.List;
 @ConditionalOnProperty("prices.crawler.controller.product.list.enabled")
 public class ProductListController {
     private final ProductServiceProvider productServiceProvider;
+    private final ProductListService productListService;
 
-    public ProductListController(ProductServiceProvider productServiceProvider) {
+    public ProductListController(ProductServiceProvider productServiceProvider, ProductListService productListService) {
         this.productServiceProvider = productServiceProvider;
+        this.productListService = productListService;
     }
 
     @CrossOrigin
     @PostMapping("/update")
-    public Mono<List<ProductListItemDto>> updateProducts(@RequestBody List<ProductListItemDto> productList) {
+    public Mono<List<ProductListItemDto>> updateProductList(@RequestBody List<ProductListItemDto> productListItems) {
         var responses = new ArrayList<Mono<ProductListItemDto>>();
 
-        for (var item : productList) {
+        for (var item : productListItems) {
             var productService = getProductServiceFromCatalog(IdUtils.parse(item.getLocale(), item.getCatalog()));
             responses.add(productService.updateProductListItem(item));
         }
 
         return Mono.zipDelayError(responses, objects -> new ArrayList(Arrays.asList(objects)));
+    }
+
+    @CrossOrigin
+    @PostMapping("/store")
+    public String storeProductList(@RequestBody List<ProductListItemDto> productListItems) {
+        return productListService.saveProductList(productListItems);
+    }
+
+    @CrossOrigin
+    @GetMapping
+    public List<ProductListItemDto> retrieveProductList(@RequestParam String id) {
+        return productListService.retrieveProductList(id);
     }
 
     private ProductService getProductServiceFromCatalog(String catalogAlias) {

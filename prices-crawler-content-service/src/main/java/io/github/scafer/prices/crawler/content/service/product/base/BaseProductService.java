@@ -5,8 +5,8 @@ import io.github.scafer.prices.crawler.content.common.dao.catalog.LocaleDao;
 import io.github.scafer.prices.crawler.content.common.dto.product.ProductListItemDto;
 import io.github.scafer.prices.crawler.content.common.dto.product.search.SearchProductDto;
 import io.github.scafer.prices.crawler.content.common.dto.product.search.SearchProductsDto;
-import io.github.scafer.prices.crawler.content.repository.catalog.service.CatalogDataService;
-import io.github.scafer.prices.crawler.content.repository.product.service.ProductDataService;
+import io.github.scafer.prices.crawler.content.repository.catalog.CatalogDataService;
+import io.github.scafer.prices.crawler.content.repository.product.ProductDataService;
 import io.github.scafer.prices.crawler.content.service.product.ProductService;
 import io.github.scafer.prices.crawler.content.service.product.cache.ProductCacheService;
 import org.springframework.beans.factory.annotation.Value;
@@ -78,8 +78,8 @@ public abstract class BaseProductService implements ProductService {
             return Mono.just(new SearchProductsDto(localeName, catalogName, new ArrayList<>(), generateCatalogData()));
         }
 
-        if (productCacheService.isProductListCached(localeName, catalogName, query)) {
-            var cache = productCacheService.retrieveProductsList(localeName, catalogName, query);
+        if (productCacheService.isProductSearchResultCached(localeName, catalogName, query)) {
+            var cache = productCacheService.retrieveProductSearchResult(localeName, catalogName, query);
             return Mono.just(new SearchProductsDto(localeName, catalogName, cache, generateCatalogData()));
         }
 
@@ -95,8 +95,8 @@ public abstract class BaseProductService implements ProductService {
             return Mono.just(new SearchProductDto(localeName, catalogName, null));
         }
 
-        if (productCacheService.isProductCachedByUrl(productUrl)) {
-            var cache = productCacheService.retrieveProductByUrl(productUrl);
+        if (productCacheService.isProductSearchResultByUrl(productUrl)) {
+            var cache = productCacheService.retrieveProductSearchResultByUrl(productUrl);
             return Mono.just(new SearchProductDto(localeName, catalogName, cache));
         }
 
@@ -143,7 +143,7 @@ public abstract class BaseProductService implements ProductService {
         }
 
         if (isCacheEnabled && isLocaleOrCatalogCacheEnabled()) {
-            productCacheService.storeProductList(localeName, catalogName, query, searchProductsDto.getProducts());
+            productCacheService.cacheProductSearchResult(localeName, catalogName, query, searchProductsDto.getProducts());
         }
 
         return searchProductsDto;

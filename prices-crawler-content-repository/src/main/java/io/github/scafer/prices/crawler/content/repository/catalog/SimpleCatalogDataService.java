@@ -1,10 +1,8 @@
-package io.github.scafer.prices.crawler.content.repository.catalog.service;
+package io.github.scafer.prices.crawler.content.repository.catalog;
 
 import io.github.scafer.prices.crawler.content.common.dao.catalog.CatalogDao;
 import io.github.scafer.prices.crawler.content.common.dao.catalog.LocaleDao;
 import io.github.scafer.prices.crawler.content.common.util.IdUtils;
-import io.github.scafer.prices.crawler.content.repository.catalog.CatalogDataRepository;
-import io.github.scafer.prices.crawler.content.repository.catalog.LocaleDataRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;

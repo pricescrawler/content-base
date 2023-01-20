@@ -1,11 +1,10 @@
-package io.github.scafer.prices.crawler.content.repository.product.service;
+package io.github.scafer.prices.crawler.content.repository.product;
 
 import io.github.scafer.prices.crawler.content.common.dao.product.PriceDao;
 import io.github.scafer.prices.crawler.content.common.dao.product.ProductDao;
 import io.github.scafer.prices.crawler.content.common.dto.product.ProductDto;
 import io.github.scafer.prices.crawler.content.common.dto.product.search.SearchProductsDto;
 import io.github.scafer.prices.crawler.content.common.util.IdUtils;
-import io.github.scafer.prices.crawler.content.repository.product.ProductDataRepository;
 import io.github.scafer.prices.crawler.content.repository.product.incident.ProductIncidentDataService;
 import io.github.scafer.prices.crawler.content.repository.product.util.ProductUtils;
 import lombok.extern.log4j.Log4j2;
