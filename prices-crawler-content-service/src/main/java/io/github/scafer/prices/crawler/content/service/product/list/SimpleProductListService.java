@@ -11,6 +11,7 @@ import java.util.List;
 
 @Service
 public class SimpleProductListService implements ProductListService {
+    public static final int PRODUCT_LIST_PRUNE_TIME = 2;
     private final ProductListDataService productListDataService;
 
     public SimpleProductListService(ProductListDataService productListDataService) {
@@ -43,7 +44,7 @@ public class SimpleProductListService implements ProductListService {
         for (var item : productListDataService.findAllProductList()) {
             var days = DateTimeUtils.durationBetweenDates(item.getDate(), DateTimeUtils.getCurrentDateTime()).toDays();
 
-            if (days > 2) {
+            if (days > PRODUCT_LIST_PRUNE_TIME) {
                 productListDataService.deleteProductList(item.getId());
             }
         }
