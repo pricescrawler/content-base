@@ -2,10 +2,12 @@ package io.github.scafer.prices.crawler.content.service.product.list;
 
 import io.github.scafer.prices.crawler.content.common.dao.product.list.ProductListDao;
 import io.github.scafer.prices.crawler.content.common.dto.product.ProductListItemDto;
+import io.github.scafer.prices.crawler.content.common.dto.product.ProductListShareDto;
 import io.github.scafer.prices.crawler.content.common.util.DateTimeUtils;
 import io.github.scafer.prices.crawler.content.repository.product.list.ProductListDataService;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 
@@ -30,13 +32,18 @@ public class SimpleProductListService implements ProductListService {
     }
 
     @Override
-    public String saveProductList(List<ProductListItemDto> productListItems) {
+    public ProductListShareDto storeProductList(List<ProductListItemDto> productListItems) {
+        var dateTime = DateTimeUtils.getCurrentDateTime();
+
         var productList = ProductListDao.builder()
                 .items(productListItems)
-                .date(DateTimeUtils.getCurrentDateTime())
+                .date(dateTime)
                 .build();
 
-        return productListDataService.saveProductList(productList).getId();
+        return ProductListShareDto.builder()
+                .id(productListDataService.saveProductList(productList).getId())
+                .expirationDate(DateTimeUtils.incrementDate(dateTime, Duration.ofDays(PRODUCT_LIST_PRUNE_TIME)))
+                .build();
     }
 
     @Override

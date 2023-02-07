@@ -1,6 +1,7 @@
 package io.github.scafer.prices.crawler.content.controller.product;
 
 import io.github.scafer.prices.crawler.content.common.dto.product.ProductListItemDto;
+import io.github.scafer.prices.crawler.content.common.dto.product.ProductListShareDto;
 import io.github.scafer.prices.crawler.content.common.util.IdUtils;
 import io.github.scafer.prices.crawler.content.service.product.ProductService;
 import io.github.scafer.prices.crawler.content.service.product.list.ProductListService;
@@ -42,8 +43,8 @@ public class ProductListController {
 
     @CrossOrigin
     @PostMapping("/store")
-    public String storeProductList(@RequestBody List<ProductListItemDto> productListItems) {
-        return productListService.saveProductList(productListItems);
+    public ProductListShareDto storeProductList(@RequestBody List<ProductListItemDto> productListItems) {
+        return productListService.storeProductList(productListItems);
     }
 
     @CrossOrigin

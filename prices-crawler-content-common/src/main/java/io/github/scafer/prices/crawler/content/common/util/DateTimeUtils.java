@@ -1,14 +1,13 @@
 package io.github.scafer.prices.crawler.content.common.util;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import lombok.experimental.UtilityClass;
 
 import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@UtilityClass
 public class DateTimeUtils {
     public static String getCurrentDateTime() {
         return ZonedDateTime.now(Clock.systemUTC()).toString();
@@ -34,5 +33,9 @@ public class DateTimeUtils {
                 ZonedDateTime.parse(startDate),
                 ZonedDateTime.parse(endDate)
         );
+    }
+
+    public static String incrementDate(String startDate, Duration duration) {
+        return ZonedDateTime.parse(startDate).plus(duration).toLocalDate().toString();
     }
 }
