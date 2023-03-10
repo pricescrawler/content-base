@@ -6,19 +6,19 @@
     <packaging>jar</packaging>
 
     <parent>
-        <groupId>io.github.scafer.prices.crawler.content</groupId>
+        <groupId>io.github.prices-crawler.content</groupId>
         <artifactId>prices-crawler-content-base</artifactId>
-        <version>0.0.2</version>
+        <version>0.1.0</version>
     </parent>
 
     <dependencies>
         <dependency>
-            <groupId>io.github.scafer.prices.crawler.content</groupId>
+            <groupId>io.github.prices-crawler.content</groupId>
             <artifactId>prices-crawler-content-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.scafer.prices.crawler.content</groupId>
+            <groupId>io.github.prices-crawler.content</groupId>
             <artifactId>prices-crawler-content-repository</artifactId>
             <version>${project.version}</version>
         </dependency>
