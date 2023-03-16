@@ -4,7 +4,7 @@ COPY ./ ./
 RUN mvn clean package
 RUN java -Djarmode=layertools -jar prices-crawler-content-application/target/*.jar extract
 
-FROM openjdk:17-slim
+FROM openjdk:18-slim
 LABEL PROJECT_NAME=prices-crawler-content-api
 WORKDIR application
 COPY --from=builder application/dependencies/ ./
