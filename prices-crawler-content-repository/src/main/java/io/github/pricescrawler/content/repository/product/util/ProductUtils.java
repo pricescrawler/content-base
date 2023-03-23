@@ -18,6 +18,10 @@ public class ProductUtils {
             return eanUpcList;
         }
 
+        if(eanUpcList == null) {
+            return storedEanUpcList;
+        }
+
         var uniqueEanUpcSet = new HashSet<>(storedEanUpcList);
 
         for (String eanUpc : eanUpcList) {
