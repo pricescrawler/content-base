@@ -25,7 +25,7 @@
     <properties>
         <java.version>17</java.version>
         <springdoc.version>2.0.4</springdoc.version>
-        <de.flapdoodle.embed.mongo.spring30x.version>4.6.1</de.flapdoodle.embed.mongo.spring30x.version>
+        <de.flapdoodle.embed.mongo.spring30x.version>4.6.2</de.flapdoodle.embed.mongo.spring30x.version>
     </properties>
 
     <dependencies>
