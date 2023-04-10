@@ -6,7 +6,7 @@
     <packaging>jar</packaging>
 
     <parent>
-        <groupId>io.github.prices-crawler.content</groupId>
+        <groupId>io.github.pricescrawler.content</groupId>
         <artifactId>prices-crawler-content-base</artifactId>
         <version>0.1.0</version>
     </parent>

@@ -19,6 +19,7 @@ public class PriceDto {
     private String campaignPrice;
     private String pricePerQuantity;
     private String quantity;
+    private String name;
     private String date;
     private Map<String, Object> data;
 
@@ -27,6 +28,7 @@ public class PriceDto {
         this.campaignPrice = price.getCampaignPrice();
         this.pricePerQuantity = price.getPricePerQuantity();
         this.quantity = price.getQuantity();
+        this.name = price.getName();
         this.date = DateTimeUtils.getDateFromDateTime(price.getDate());
         this.data = DataMapUtils.getMapPublicKeys(price.getData());
     }

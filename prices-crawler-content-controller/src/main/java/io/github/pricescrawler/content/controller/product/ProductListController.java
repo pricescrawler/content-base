@@ -29,7 +29,7 @@ public class ProductListController {
 
     @PostMapping("/update")
     public Flux<ProductListItemDto> updateProductList(@RequestBody List<ProductListItemDto> productListItems) {
-        if(productListItems.isEmpty()) {
+        if (productListItems.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The list is empty");
         }
 

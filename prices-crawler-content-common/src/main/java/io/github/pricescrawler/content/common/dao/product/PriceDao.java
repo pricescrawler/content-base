@@ -17,6 +17,7 @@ public class PriceDao {
     private String campaignPrice;
     private String pricePerQuantity;
     private String quantity;
+    private String name;
     private String date;
     private Map<String, Object> data;
 
@@ -24,7 +25,8 @@ public class PriceDao {
         this.regularPrice = product.getRegularPrice();
         this.campaignPrice = product.getCampaignPrice();
         this.pricePerQuantity = product.getPricePerQuantity();
-        this.quantity = product.getQuantity() == null || product.getQuantity().isEmpty() ? product.getName() : product.getQuantity();
+        this.quantity = product.getQuantity();
+        this.name = product.getName();
         this.date = product.getDate();
         this.data = product.getData();
     }

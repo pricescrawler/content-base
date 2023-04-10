@@ -18,7 +18,7 @@ public class ProductUtils {
             return eanUpcList;
         }
 
-        if(eanUpcList == null) {
+        if (eanUpcList == null) {
             return storedEanUpcList;
         }
 

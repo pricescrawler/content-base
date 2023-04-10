@@ -2,7 +2,7 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>io.github.prices-crawler.content</groupId>
+    <groupId>io.github.pricescrawler.content</groupId>
     <artifactId>prices-crawler-content-base</artifactId>
     <version>0.1.0</version>
     <packaging>pom</packaging>
@@ -10,7 +10,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.0.4</version>
+        <version>3.0.5</version>
         <relativePath/>
     </parent>
 
@@ -25,7 +25,7 @@
     <properties>
         <java.version>17</java.version>
         <springdoc.version>2.0.4</springdoc.version>
-        <de.flapdoodle.embed.mongo.spring30x.version>4.6.1</de.flapdoodle.embed.mongo.spring30x.version>
+        <de.flapdoodle.embed.mongo.spring30x.version>4.6.2</de.flapdoodle.embed.mongo.spring30x.version>
     </properties>
 
     <dependencies>
@@ -76,7 +76,7 @@
         <repository>
             <id>github</id>
             <name>GitHub prices-crawler Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/prices-crawler/content-base</url>
+            <url>https://maven.pkg.github.com/pricescrawler/content-base</url>
         </repository>
     </distributionManagement>
 
