@@ -9,6 +9,7 @@ import io.github.pricescrawler.content.repository.catalog.CatalogDataService;
 import io.github.pricescrawler.content.repository.product.ProductDataService;
 import io.github.pricescrawler.content.service.product.ProductService;
 import io.github.pricescrawler.content.service.product.cache.ProductCacheService;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import reactor.core.publisher.Mono;
 
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+@Log4j2
 public abstract class BaseProductService implements ProductService {
     protected final String localeName;
     protected final String catalogName;
@@ -84,7 +86,17 @@ public abstract class BaseProductService implements ProductService {
         }
 
         var result = searchItemLogic(query)
-                .thenApply(value -> saveProductsToDatabaseAndCache(value, query));
+                .thenApply(value -> saveProductsToDatabaseAndCache(value, query))
+                .exceptionally(t -> {
+                            log.error(t.getMessage());
+                            return SearchProductsDto.builder()
+                                    .locale(localeName)
+                                    .catalog(catalogName)
+                                    .products(List.of())
+                                    .data(generateCatalogData())
+                                    .build();
+                        }
+                );
 
         return Mono.fromFuture(result);
     }
@@ -101,7 +113,11 @@ public abstract class BaseProductService implements ProductService {
         }
 
         var result = searchItemByProductUrlLogic(productUrl)
-                .thenApply(value -> saveProductToDatabase(value, null));
+                .thenApply(value -> saveProductToDatabase(value, null))
+                .exceptionally(t -> {
+                    log.error(t.getMessage());
+                    return SearchProductDto.builder().build();
+                });
 
         return Mono.fromFuture(result);
     }
@@ -112,7 +128,13 @@ public abstract class BaseProductService implements ProductService {
             return Mono.just(productListItem);
         }
 
-        return Mono.fromFuture(updateItemLogic(productListItem));
+        var result = updateItemLogic(productListItem)
+                .exceptionally(t -> {
+                    log.error(t.getMessage());
+                    return productListItem;
+                });
+
+        return Mono.fromFuture(result);
     }
 
     protected Map<String, Object> generateCatalogData() {
