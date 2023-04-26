@@ -39,6 +39,10 @@ public class ProductListController {
 
     @PostMapping("/store")
     public ProductListShareDto storeProductList(@RequestBody List<ProductListItemDto> productListItems) {
+        if (productListItems.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The list is empty");
+        }
+
         return productListService.storeProductList(productListItems);
     }
 
