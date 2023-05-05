@@ -25,20 +25,23 @@ public class ProductContentParserController {
     @PostMapping
     public ProductDto parseProductFromContent(@RequestBody RawProductContentDto rawProductContent) {
         var productService = getProductServiceFromCatalog(rawProductContent.getCatalog());
-        return productService.parseProductFromContent(rawProductContent.getContent(), rawProductContent.getUrl(), rawProductContent.getDate());
+        return productService.parseProductFromContent(rawProductContent.getCatalog(), rawProductContent.getUrl(),
+                rawProductContent.getContent(), rawProductContent.getDate());
     }
 
     @PostMapping("/list")
     public List<ProductDto> parseProductListFromContent(@RequestBody RawProductContentDto rawProductContent) {
         var productService = getProductServiceFromCatalog(rawProductContent.getCatalog());
-        return productService.parseProductsFromContent(rawProductContent.getContent(), rawProductContent.getDate());
+        return productService.parseProductsFromContent(rawProductContent.getCatalog(), rawProductContent.getContent(),
+                rawProductContent.getDate());
     }
 
     private ProductService getProductServiceFromCatalog(String catalogAlias) {
         try {
             return productServiceProvider.getServiceFromCatalog(catalogAlias);
         } catch (Exception ex) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("%s catalog not found", catalogAlias));
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("%s catalog not found",
+                    catalogAlias));
         }
     }
 }

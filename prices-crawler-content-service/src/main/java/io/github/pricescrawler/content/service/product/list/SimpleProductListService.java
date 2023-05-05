@@ -49,7 +49,8 @@ public class SimpleProductListService implements ProductListService {
     @Override
     public void deleteOutdatedProductLists() {
         for (var item : productListDataService.findAllProductList()) {
-            var days = DateTimeUtils.getDurationBetweenDates(item.getDate(), DateTimeUtils.getCurrentDateTime()).toDays();
+            var days = DateTimeUtils.getDurationBetweenDates(item.getDate(),
+                    DateTimeUtils.getCurrentDateTime()).toDays();
 
             if (days > PRODUCT_LIST_PRUNE_TIME) {
                 productListDataService.deleteProductList(item.getId());

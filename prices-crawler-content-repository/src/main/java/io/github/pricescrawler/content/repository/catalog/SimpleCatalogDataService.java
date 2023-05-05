@@ -12,7 +12,8 @@ public class SimpleCatalogDataService implements CatalogDataService {
     private final LocaleDataRepository localeDataRepository;
     private final CatalogDataRepository catalogDataRepository;
 
-    public SimpleCatalogDataService(LocaleDataRepository localeDataRepository, CatalogDataRepository catalogDataRepository) {
+    public SimpleCatalogDataService(LocaleDataRepository localeDataRepository,
+                                    CatalogDataRepository catalogDataRepository) {
         this.localeDataRepository = localeDataRepository;
         this.catalogDataRepository = catalogDataRepository;
     }

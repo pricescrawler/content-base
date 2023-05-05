@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -19,6 +20,7 @@ public class CatalogDto {
     private String baseUrl;
     private String imageUrl;
     private String description;
+    private List<StoreDto> stores;
     private boolean isActive;
     private Map<String, Object> data;
 
@@ -28,6 +30,7 @@ public class CatalogDto {
         this.baseUrl = catalog.getBaseUrl();
         this.imageUrl = catalog.getImageUrl();
         this.description = catalog.getDescription();
+        this.stores = catalog.getStores() != null ? catalog.getStores().stream().map(StoreDto::new).toList() : null;
         this.isActive = catalog.isActive();
         this.data = DataMapUtils.getMapPublicKeys(catalog.getData());
     }

@@ -1,5 +1,7 @@
 package io.github.pricescrawler.content.controller.product;
 
+import io.github.pricescrawler.content.common.dto.product.filter.FilterProductByQueryDto;
+import io.github.pricescrawler.content.common.dto.product.filter.FilterProductByUrlDto;
 import io.github.pricescrawler.content.common.dto.product.search.SearchProductDto;
 import io.github.pricescrawler.content.common.dto.product.search.SearchProductsDto;
 import io.github.pricescrawler.content.common.dto.product.search.SearchQueryDto;
@@ -29,7 +31,8 @@ public class ProductSearchController {
     @PostMapping
     public Flux<SearchProductsDto> searchProducts(@RequestBody SearchQueryDto searchQuery) {
         var searchResults = Arrays.stream(searchQuery.getCatalogs())
-                .map(catalog -> getProductServiceFromCatalog(catalog).searchProductByQuery(searchQuery.getQuery()))
+                .map(catalog -> getProductServiceFromCatalog(catalog)
+                        .searchProductByQuery(new FilterProductByQueryDto(searchQuery, catalog)))
                 .toList();
 
         return Flux.merge(searchResults);
@@ -37,7 +40,8 @@ public class ProductSearchController {
 
     @GetMapping("/{locale}/{catalog}/{productUrl}")
     public Mono<SearchProductDto> searchProduct(@PathVariable String locale, @PathVariable String catalog, @PathVariable String productUrl) {
-        return getProductServiceFromCatalog(IdUtils.parse(locale, catalog)).searchProductByProductUrl(productUrl);
+        return getProductServiceFromCatalog(IdUtils.parse(locale, catalog))
+                .searchProductByProductUrl(new FilterProductByUrlDto(productUrl, catalog));
     }
 
     private ProductService getProductServiceFromCatalog(String catalogAlias) {

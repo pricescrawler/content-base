@@ -4,27 +4,16 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.List;
 import java.util.Map;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document("catalogs")
-public class CatalogDao {
-    @Id
+public class StoreDao {
     private String id;
     private String name;
-    private String baseUrl;
-    private String imageUrl;
-    private String description;
-    private List<String> locales;
-    private List<String> categories;
-    private List<StoreDao> stores;
     private boolean isActive = true;
     private boolean isCacheEnabled = true;
     private boolean isHistoryEnabled = true;
