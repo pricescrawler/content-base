@@ -60,14 +60,14 @@ class ProductSearchControllerTest {
 
     @Test
     void productByQueryTest_OK() {
-        var search = new SearchQueryDto(new String[]{"local.demo"}, "query");
+        var search = SearchQueryDto.builder().query("query").catalogs(new String[]{"local.demo"}).build();
         var entity = restTemplate.postForEntity(PRODUCTS_SEARCH, search, JsonNode.class);
         assertEquals(HttpStatus.OK, entity.getStatusCode());
     }
 
     @Test
     void productByQueryTest_NOTFOUND() {
-        var search = new SearchQueryDto(new String[]{"local.fake-catalog"}, "product_01");
+        var search = SearchQueryDto.builder().query("query").catalogs(new String[]{"local.fake-catalog"}).build();
         var entity = restTemplate.postForEntity(PRODUCTS_SEARCH, search, JsonNode.class);
         assertEquals(HttpStatus.NOT_FOUND, entity.getStatusCode());
     }

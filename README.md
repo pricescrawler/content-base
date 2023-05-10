@@ -27,19 +27,21 @@ comparison and analysis.
 
 ### Spring Environment Properties
 
-| #  | Name                                              | Type    | Description            | Default     |
-|----|---------------------------------------------------|---------|------------------------|-------------|
-| 1  | spring.data.mongodb.uri                           | String  | Mongodb URI            | -           |
-| 2  | spring.data.mongodb.database                      | String  | Mongodb database name  | -           |
-| 3  | prices.crawler.cache.enabled                      | Boolean | Cache service          | true        |
-| 4  | prices.crawler.history.enabled                    | Boolean | Prices history service | true        |
-| 5  | prices.crawler.product-incident.enabled           | Boolean | Product incident check | true        |
-| 6  | prices.crawler.controller.catalog.enabled         | Boolean | Catalog controller     | false       |
-| 7  | prices.crawler.controller.product.list.enabled    | Boolean | Product controller     | false       |
-| 8  | prices.crawler.controller.product.search.enabled  | Boolean | Product controller     | false       |
-| 9  | prices.crawler.controller.product.parser.enabled  | Boolean | Product controller     | false       |
-| 10 | prices.crawler.controller.product.history.enabled | Boolean | Product controller     | false       |
-| 11 | prices.crawler.background.service.cron            | String  | Cron String            | 0 0 0 * * * |
+| #  | Name                                              | Type    | Description                  | Default     |
+|----|---------------------------------------------------|---------|------------------------------|-------------|
+| 1  | spring.data.mongodb.uri                           | String  | Mongodb URI                  | -           |
+| 2  | spring.data.mongodb.database                      | String  | Mongodb database name        | -           |
+| 3  | prices.crawler.cache.enabled                      | Boolean | Cache service                | true        |
+| 4  | prices.crawler.history.enabled                    | Boolean | Prices history service       | true        |
+| 5  | prices.crawler.product-incident.enabled           | Boolean | Product incident check       | true        |
+| 6  | prices.crawler.controller.catalog.enabled         | Boolean | Catalog controller           | false       |
+| 7  | prices.crawler.controller.product.list.enabled    | Boolean | Product controller           | false       |
+| 8  | prices.crawler.controller.product.search.enabled  | Boolean | Product controller           | false       |
+| 9  | prices.crawler.controller.product.parser.enabled  | Boolean | Product controller           | false       |
+| 10 | prices.crawler.controller.product.history.enabled | Boolean | Product controller           | false       |
+| 11 | prices.crawler.background.service.cron            | String  | Cron string                  | 0 0 0 * * * |
+| 12 | prices.crawler.product.data.hintsEnabled          | String  | Product hints enabled        | true        |
+| 13 | prices.crawler.product.data.searchTermsEnabled    | String  | Product search terms enabled | true        |
 
 ### MongoDB Configurations
 

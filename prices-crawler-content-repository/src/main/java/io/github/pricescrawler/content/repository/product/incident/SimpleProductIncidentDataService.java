@@ -6,6 +6,7 @@ import io.github.pricescrawler.content.common.dao.product.incident.ProductIncide
 import io.github.pricescrawler.content.common.dto.product.ProductDto;
 import io.github.pricescrawler.content.common.util.DateTimeUtils;
 import io.github.pricescrawler.content.repository.product.ProductDataRepository;
+import io.github.pricescrawler.content.repository.product.config.ProductDataConfig;
 import io.github.pricescrawler.content.repository.product.util.ProductUtils;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -15,10 +16,12 @@ import java.util.Collections;
 @Log4j2
 @Service
 public class SimpleProductIncidentDataService implements ProductIncidentDataService {
-    private final ProductIncidentDataRepository productIncidentDataRepository;
+    private final ProductDataConfig productDataConfig;
     private final ProductDataRepository productDataRepository;
+    private final ProductIncidentDataRepository productIncidentDataRepository;
 
-    public SimpleProductIncidentDataService(ProductIncidentDataRepository productIncidentDataRepository, ProductDataRepository productDataRepository) {
+    public SimpleProductIncidentDataService(ProductDataConfig productDataConfig, ProductIncidentDataRepository productIncidentDataRepository, ProductDataRepository productDataRepository) {
+        this.productDataConfig = productDataConfig;
         this.productIncidentDataRepository = productIncidentDataRepository;
         this.productDataRepository = productDataRepository;
     }
@@ -36,8 +39,14 @@ public class SimpleProductIncidentDataService implements ProductIncidentDataServ
                     incident.addProduct(lastProduct);
                 }
 
-                incident.incrementHits();
-                incident.setSearchTerms(ProductUtils.parseSearchTerms(incident.getSearchTerms(), query));
+                if (productDataConfig.isHintsEnabled()) {
+                    incident.incrementHits();
+                }
+
+                if (productDataConfig.isSearchTermsEnabled()) {
+                    incident.setSearchTerms(ProductUtils.parseSearchTerms(incident.getSearchTerms(), query));
+                }
+
                 productIncidentDataRepository.save(incident);
             } else {
                 productIncidentDataRepository.save(createProductIncident(product.getId(), lastProduct, query));
@@ -63,13 +72,18 @@ public class SimpleProductIncidentDataService implements ProductIncidentDataServ
     }
 
     private ProductIncidentDao createProductIncident(String productId, ProductDto lastProduct, String query) {
-        return ProductIncidentDao.builder()
+        var productIncident = ProductIncidentDao.builder()
                 .id(productId)
                 .products(Collections.singletonList(lastProduct))
-                .searchTerms(ProductUtils.parseSearchTerms(null, query))
                 .created(DateTimeUtils.getCurrentDateTime())
                 .updated(DateTimeUtils.getCurrentDateTime())
                 .build();
+
+        if (productDataConfig.isSearchTermsEnabled()) {
+            productIncident.setSearchTerms(ProductUtils.parseSearchTerms(null, query));
+        }
+
+        return productIncident;
     }
 
     private void mergeProductIncident(ProductIncidentDao productIncident) {

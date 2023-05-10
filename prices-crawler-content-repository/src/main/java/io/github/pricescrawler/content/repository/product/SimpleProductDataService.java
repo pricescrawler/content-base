@@ -5,6 +5,7 @@ import io.github.pricescrawler.content.common.dao.product.ProductDao;
 import io.github.pricescrawler.content.common.dto.product.ProductDto;
 import io.github.pricescrawler.content.common.dto.product.search.SearchProductsDto;
 import io.github.pricescrawler.content.common.util.IdUtils;
+import io.github.pricescrawler.content.repository.product.config.ProductDataConfig;
 import io.github.pricescrawler.content.repository.product.incident.ProductIncidentDataService;
 import io.github.pricescrawler.content.repository.product.util.ProductUtils;
 import lombok.extern.log4j.Log4j2;
@@ -19,13 +20,15 @@ import java.util.concurrent.CompletableFuture;
 @Log4j2
 @Service
 public class SimpleProductDataService implements ProductDataService {
+    private final ProductDataConfig productDataConfig;
     private final ProductDataRepository productDataRepository;
     private final ProductIncidentDataService productIncidentDataService;
 
     @Value("${prices.crawler.product-incident.enabled:true}")
     private boolean isProductIncidentEnabled;
 
-    public SimpleProductDataService(ProductDataRepository productDataRepository, ProductIncidentDataService productIncidentDataService) {
+    public SimpleProductDataService(ProductDataConfig productDataConfig, ProductDataRepository productDataRepository, ProductIncidentDataService productIncidentDataService) {
+        this.productDataConfig = productDataConfig;
         this.productDataRepository = productDataRepository;
         this.productIncidentDataService = productIncidentDataService;
     }
@@ -49,7 +52,7 @@ public class SimpleProductDataService implements ProductDataService {
                 var productData = optionalProduct.get();
 
                 if (isProductDataEquals(productData, productDto)) {
-                    productDataRepository.save(updatedProductData(productData, productDto, query));
+                    saveProduct(updatedProductData(productData, productDto, query));
                 } else {
                     CompletableFuture.runAsync(() -> productIncidentDataService.saveIncident(productData, productDto, query));
                 }
@@ -59,18 +62,36 @@ public class SimpleProductDataService implements ProductDataService {
         }
     }
 
+    public void saveProduct(ProductDao product) {
+        var isValid = !product.getName().isBlank();
+
+        if (isValid) {
+            productDataRepository.save(product);
+        }
+    }
+
     private void createProductData(String locale, String catalog, ProductDto product, String query) {
         var productData = new ProductDao(locale, catalog, product);
         productData.setPrices(List.of(new PriceDao(product)));
-        productData.setSearchTerms(ProductUtils.parseSearchTerms(null, query));
-        productDataRepository.save(productData);
+
+        if (productDataConfig.isSearchTermsEnabled()) {
+            productData.setSearchTerms(ProductUtils.parseSearchTerms(null, query));
+        }
+
+        saveProduct(productData);
     }
 
     private ProductDao updatedProductData(ProductDao product, ProductDto lastProduct, String query) {
-        product.updateFromProduct(lastProduct).incrementHits();
         product.setPrices(ProductUtils.parsePricesHistory(product.getPrices(), new PriceDao(lastProduct)));
-        product.setSearchTerms(ProductUtils.parseSearchTerms(product.getSearchTerms(), query));
         product.setEanUpcList(ProductUtils.parseEanUpcList(product.getEanUpcList(), lastProduct.getEanUpcList()));
+
+        if (productDataConfig.isHintsEnabled()) {
+            product.incrementHits();
+        }
+
+        if (productDataConfig.isSearchTermsEnabled()) {
+            product.setSearchTerms(ProductUtils.parseSearchTerms(product.getSearchTerms(), query));
+        }
         return product;
     }
 
