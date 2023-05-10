@@ -52,13 +52,21 @@ public class SimpleProductDataService implements ProductDataService {
                 var productData = optionalProduct.get();
 
                 if (isProductDataEquals(productData, productDto)) {
-                    productDataRepository.save(updatedProductData(productData, productDto, query));
+                    saveProduct(updatedProductData(productData, productDto, query));
                 } else {
                     CompletableFuture.runAsync(() -> productIncidentDataService.saveIncident(productData, productDto, query));
                 }
             } else {
                 createProductData(searchProducts.getLocale(), searchProducts.getCatalog(), productDto, query);
             }
+        }
+    }
+
+    public void saveProduct(ProductDao product) {
+        var isValid = !product.getName().isBlank();
+
+        if (isValid) {
+            productDataRepository.save(product);
         }
     }
 
@@ -70,7 +78,7 @@ public class SimpleProductDataService implements ProductDataService {
             productData.setSearchTerms(ProductUtils.parseSearchTerms(null, query));
         }
 
-        productDataRepository.save(productData);
+        saveProduct(productData);
     }
 
     private ProductDao updatedProductData(ProductDao product, ProductDto lastProduct, String query) {

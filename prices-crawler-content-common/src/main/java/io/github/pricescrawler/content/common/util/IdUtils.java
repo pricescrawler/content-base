@@ -8,7 +8,8 @@ import java.util.Arrays;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class IdUtils {
     public static final String CATALOG_STORE_SEPARATOR = "#";
-    public static final String ID_SEPARATOR = String.valueOf('.');
+    public static final String ID_SEPARATOR = ".";
+    public static final String ID_SEPARATOR_REGEX = String.format("\\%s", ID_SEPARATOR);
 
     public static String parse(String locale, String catalog) {
         return String.format("%s%s%s", locale, ID_SEPARATOR, catalog);
@@ -41,7 +42,7 @@ public class IdUtils {
     }
 
     public static String removeLocaleFromComposedKey(String value) {
-        var localeAndStore = value.split(ID_SEPARATOR);
+        var localeAndStore = value.split(ID_SEPARATOR_REGEX);
 
         if (localeAndStore.length > 1) {
             return value.replace(String.format("%s%s", localeAndStore[0], ID_SEPARATOR), "");

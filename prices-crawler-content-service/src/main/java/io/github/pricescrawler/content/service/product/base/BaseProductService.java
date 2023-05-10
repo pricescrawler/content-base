@@ -23,7 +23,6 @@ import java.util.concurrent.CompletableFuture;
 public abstract class BaseProductService implements ProductService {
     protected final String localeId;
     protected final String catalogId;
-    private final CatalogDataService catalogDataService;
     private final ProductDataService productDatabaseService;
     private final ProductCacheService productCacheService;
     protected Optional<LocaleDao> optionalLocale;
@@ -38,8 +37,7 @@ public abstract class BaseProductService implements ProductService {
                                  ProductDataService productDatabaseService,
                                  ProductCacheService productCacheService) {
         this.localeId = localeId;
-        this.catalogId = localeId;
-        this.catalogDataService = catalogDataService;
+        this.catalogId = catalogId;
         this.productDatabaseService = productDatabaseService;
         this.productCacheService = productCacheService;
         this.optionalLocale = catalogDataService.findLocaleById(localeId);
@@ -77,7 +75,7 @@ public abstract class BaseProductService implements ProductService {
         var storeId = filterProductByQuery.getStoreId();
         var composedCatalogKey = filterProductByQuery.getComposedCatalogKey();
 
-        if (isLocaleOrCatalogOrStoreDisabled(storeId)) {
+        if (isLocaleOrCatalogOrStoreDisabled(storeId) || (storeId != null && findStore(storeId).isEmpty())) {
             return Mono.just(new SearchProductsDto(localeId, composedCatalogKey, new ArrayList<>(),
                     generateCatalogData(storeId)));
         }
@@ -106,9 +104,11 @@ public abstract class BaseProductService implements ProductService {
     @Override
     public Mono<SearchProductDto> searchProductByProductUrl(FilterProductByUrlDto filterProductByUrl) {
         var productUrl = filterProductByUrl.getUrl();
+        var storeId = filterProductByUrl.getStoreId();
         var composedCatalogKey = filterProductByUrl.getComposedCatalogKey();
 
-        if (isLocaleOrCatalogOrStoreDisabled(filterProductByUrl.getStoreId())) {
+        if (isLocaleOrCatalogOrStoreDisabled(filterProductByUrl.getStoreId())
+                || (storeId != null && findStore(storeId).isEmpty())) {
             return Mono.just(new SearchProductDto(localeId, composedCatalogKey, null));
         }
 
@@ -147,9 +147,8 @@ public abstract class BaseProductService implements ProductService {
     protected Map<String, Object> generateCatalogData(String storeId) {
         var displayOptions = new HashMap<String, Object>();
 
-        catalogDataService.findCatalogByIdAndLocaleId(catalogId, localeId).stream().findFirst()
-                .ifPresent(value -> displayOptions.put("catalogName", value.getName()));
-
+        optionalCatalog.ifPresent(value -> displayOptions.put("catalogName", value.getName()));
+        findStore(storeId).ifPresent(value -> displayOptions.put("storeName", value.getName()));
         displayOptions.put("historyEnabled", isLocaleOrCatalogOrStoreHistoryEnabled(storeId));
 
         return displayOptions;
@@ -184,21 +183,19 @@ public abstract class BaseProductService implements ProductService {
     }
 
     private boolean isLocaleOrCatalogOrStoreHistoryEnabled(String storeId) {
-        var store = findStore(storeId);
-
-        return (optionalLocale.isEmpty() && optionalCatalog.isEmpty()) ||
+        var result = (optionalLocale.isEmpty() && optionalCatalog.isEmpty()) ||
                 ((optionalLocale.isPresent() && optionalLocale.get().isHistoryEnabled())
-                        && (optionalCatalog.isPresent() && optionalCatalog.get().isHistoryEnabled())
-                        && (store.isPresent() && store.get().isHistoryEnabled()));
+                        && (optionalCatalog.isPresent() && optionalCatalog.get().isHistoryEnabled()));
+
+        return findStore(storeId).map(storeDao -> result && storeDao.isHistoryEnabled()).orElse(result);
     }
 
     private boolean isLocaleOrCatalogOrStoreCacheEnabled(String storeId) {
-        var store = findStore(storeId);
-
-        return (optionalLocale.isEmpty() && optionalCatalog.isEmpty()) ||
+        var result = (optionalLocale.isEmpty() && optionalCatalog.isEmpty()) ||
                 ((optionalLocale.isPresent() && optionalLocale.get().isCacheEnabled())
-                        && (optionalCatalog.isPresent() && optionalCatalog.get().isCacheEnabled())
-                        && (store.isPresent() && store.get().isCacheEnabled()));
+                        && (optionalCatalog.isPresent() && optionalCatalog.get().isCacheEnabled()));
+
+        return findStore(storeId).map(storeDao -> result && storeDao.isCacheEnabled()).orElse(result);
     }
 
     private boolean isLocaleOrCatalogOrStoreDisabled(String storeId) {
