@@ -21,8 +21,11 @@ public class ProductIncidentDao {
     private String id;
     private List<ProductDto> products;
     private String description;
+    @Builder.Default
     private boolean isMerged = false;
+    @Builder.Default
     private boolean isClosed = false;
+    @Builder.Default
     private int hits = 1;
     private List<String> searchTerms;
     private String created;

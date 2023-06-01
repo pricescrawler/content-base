@@ -7,11 +7,62 @@ import io.github.pricescrawler.content.common.dao.product.PriceDao;
 import io.github.pricescrawler.content.common.dao.product.ProductDao;
 import io.github.pricescrawler.content.common.dto.product.ProductDto;
 import io.github.pricescrawler.content.common.util.DateTimeUtils;
+import io.github.pricescrawler.content.repository.catalog.CatalogDataRepository;
+import io.github.pricescrawler.content.repository.catalog.CategoryDataRepository;
+import io.github.pricescrawler.content.repository.catalog.LocaleDataRepository;
+import io.github.pricescrawler.content.repository.product.ProductDataRepository;
+import io.github.pricescrawler.content.repository.product.list.ProductListDataRepository;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.data.mongodb.core.MongoTemplate;
 
 import java.util.List;
 
-public class DemoDataUtils {
-    public static CatalogDao getCatalogDao() {
+@AutoConfigureDataMongo
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"ACTIVE_PROFILE=demo"})
+public class BaseSpringBootTest {
+    @Autowired
+    protected MongoTemplate mongoTemplate;
+
+    @Autowired
+    protected TestRestTemplate restTemplate;
+
+    @Autowired
+    protected LocaleDataRepository localeDataRepository;
+
+    @Autowired
+    protected CatalogDataRepository catalogDataRepository;
+
+    @Autowired
+    protected CategoryDataRepository categoryDataRepository;
+
+    @Autowired
+    protected ProductDataRepository productDataRepository;
+
+    @Autowired
+    protected ProductListDataRepository productListDataRepository;
+
+    @BeforeEach
+    void setup() {
+        localeDataRepository.save(getLocaleDao());
+        catalogDataRepository.save(getCatalogDao());
+        categoryDataRepository.save(getCategoryDao());
+        productDataRepository.save(getProductDao());
+    }
+
+    @AfterEach
+    void tearDown() {
+        localeDataRepository.deleteAll();
+        catalogDataRepository.deleteAll();
+        categoryDataRepository.deleteAll();
+        productDataRepository.deleteAll();
+    }
+
+    protected CatalogDao getCatalogDao() {
         return CatalogDao.builder()
                 .id("local.demo")
                 .name("Demo")
@@ -20,21 +71,21 @@ public class DemoDataUtils {
                 .build();
     }
 
-    public static CategoryDao getCategoryDao() {
+    protected CategoryDao getCategoryDao() {
         return CategoryDao.builder()
                 .id("demo-category")
                 .name("Demo Category")
                 .build();
     }
 
-    public static LocaleDao getLocaleDao() {
+    protected LocaleDao getLocaleDao() {
         return LocaleDao.builder()
                 .id("local")
                 .name("Locale")
                 .build();
     }
 
-    public static ProductDao getProductDao() {
+    protected ProductDao getProductDao() {
         var price = PriceDao.builder()
                 .regularPrice("1,20 €")
                 .campaignPrice("1,00 €")
@@ -58,7 +109,7 @@ public class DemoDataUtils {
                 .build();
     }
 
-    public static ProductDto createProductDto() {
+    protected ProductDto createProductDto() {
         return ProductDto.builder()
                 .reference("1")
                 .name("Demo Product 1")

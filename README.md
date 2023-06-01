@@ -14,6 +14,12 @@ comparison and analysis.
 | 1 | `Java`  | `17`    |
 | 2 | `Maven` | `3.8.6` |
 
+## ⚠️ Known Issues
+
+- There is a known [issue](https://github.com/spring-projects/spring-boot/issues/35566#issuecomment-1561295798) with the
+  DATABASE_NAME environment variable not functioning properly after the Spring Boot 3.1 update.
+    - Solution: To resolve this issue, it is recommended to include the database name in the DATABASE_URL.
+
 ## 🕹️ Getting Started
 
 ### Environment Variables
@@ -48,3 +54,6 @@ comparison and analysis.
 - To ensure maximum performance create the following indexes:
     - _Collection:_ products
         - eanUpcList_1
+
+### Notes
+

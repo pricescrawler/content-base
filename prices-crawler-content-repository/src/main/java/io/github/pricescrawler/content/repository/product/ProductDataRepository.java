@@ -8,5 +8,11 @@ import java.util.List;
 
 @Repository
 public interface ProductDataRepository extends MongoRepository<ProductDao, String> {
+    /**
+     * Retrieves a list of products by EAN/UPC.
+     *
+     * @param eanUpc the EAN/UPC to search for
+     * @return a list of products matching the given EAN/UPC
+     */
     List<ProductDao> findAllByEanUpcList(String eanUpc);
 }

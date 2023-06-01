@@ -20,8 +20,11 @@ public class CategoryDao {
     private String name;
     private String imageUrl;
     private String description;
+    @Builder.Default
     private boolean isActive = true;
+    @Builder.Default
     private boolean isCacheEnabled = true;
+    @Builder.Default
     private boolean isHistoryEnabled = true;
     private String created;
     private String updated;

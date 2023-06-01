@@ -14,8 +14,11 @@ import java.util.Map;
 public class StoreDao {
     private String id;
     private String name;
+    @Builder.Default
     private boolean isActive = true;
+    @Builder.Default
     private boolean isCacheEnabled = true;
+    @Builder.Default
     private boolean isHistoryEnabled = true;
     private String created;
     private String updated;

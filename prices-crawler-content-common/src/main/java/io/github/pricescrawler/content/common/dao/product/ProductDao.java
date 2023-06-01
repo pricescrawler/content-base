@@ -31,6 +31,7 @@ public class ProductDao {
     private String imageUrl;
     private String productUrl;
     private List<String> eanUpcList;
+    @Builder.Default
     private Boolean isActive = true;
     private int hits;
     private String created;

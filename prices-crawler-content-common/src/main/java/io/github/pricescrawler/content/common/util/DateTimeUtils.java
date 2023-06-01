@@ -1,12 +1,13 @@
 package io.github.pricescrawler.content.common.util;
 
-import lombok.experimental.UtilityClass;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.time.Clock;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 
-@UtilityClass
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class DateTimeUtils {
 
     /**
@@ -57,4 +58,3 @@ public class DateTimeUtils {
         return ZonedDateTime.parse(startDate).plus(duration).toLocalDate().toString();
     }
 }
-

@@ -16,7 +16,6 @@ import java.util.List;
 @RequestMapping("/api/v1/products/history")
 @ConditionalOnProperty("prices.crawler.controller.product.history.enabled")
 public class ProductHistoryController {
-
     private final ProductDataService productDataService;
 
     public ProductHistoryController(ProductDataService productDataService) {

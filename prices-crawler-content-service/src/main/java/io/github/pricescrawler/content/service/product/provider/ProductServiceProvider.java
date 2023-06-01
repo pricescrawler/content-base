@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ProductServiceProvider extends GenericServiceProvider<ProductService> {
+
     public ProductServiceProvider(ApplicationContext appContext) {
         super(appContext, ProductService.class);
     }
