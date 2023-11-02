@@ -9,7 +9,7 @@ import io.github.pricescrawler.content.common.dto.product.filter.FilterProductBy
 import io.github.pricescrawler.content.common.dto.product.search.SearchProductDto;
 import io.github.pricescrawler.content.common.dto.product.search.SearchProductsDto;
 import io.github.pricescrawler.content.repository.catalog.CatalogDataService;
-import io.github.pricescrawler.content.repository.product.ProductDataService;
+import io.github.pricescrawler.content.repository.product.history.ProductHistoryService;
 import io.github.pricescrawler.content.service.product.ProductService;
 import io.github.pricescrawler.content.service.product.cache.ProductCacheService;
 import lombok.extern.log4j.Log4j2;
@@ -23,7 +23,7 @@ import java.util.concurrent.CompletableFuture;
 public abstract class BaseProductService implements ProductService {
     protected final String localeId;
     protected final String catalogId;
-    private final ProductDataService productDatabaseService;
+    private final ProductHistoryService productDatabaseService;
     private final ProductCacheService productCacheService;
     protected Optional<LocaleDao> optionalLocale;
     protected Optional<CatalogDao> optionalCatalog;
@@ -34,7 +34,7 @@ public abstract class BaseProductService implements ProductService {
 
     protected BaseProductService(String localeId, String catalogId,
                                  CatalogDataService catalogDataService,
-                                 ProductDataService productDatabaseService,
+                                 ProductHistoryService productDatabaseService,
                                  ProductCacheService productCacheService) {
         this.localeId = localeId;
         this.catalogId = catalogId;

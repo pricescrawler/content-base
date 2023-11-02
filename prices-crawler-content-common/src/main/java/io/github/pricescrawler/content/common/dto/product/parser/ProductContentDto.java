@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RawProductContentDto {
+public class ProductContentDto {
     private String url;
     @JsonAlias("body")
     private String content;

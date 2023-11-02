@@ -1,13 +1,14 @@
 package io.github.pricescrawler.content.repository.product.incident;
 
 import io.github.pricescrawler.content.common.dao.product.PriceDao;
-import io.github.pricescrawler.content.common.dao.product.ProductDao;
+import io.github.pricescrawler.content.common.dao.product.ProductHistoryDao;
 import io.github.pricescrawler.content.common.dao.product.incident.ProductIncidentDao;
 import io.github.pricescrawler.content.common.dto.product.ProductDto;
 import io.github.pricescrawler.content.common.util.DateTimeUtils;
-import io.github.pricescrawler.content.repository.product.ProductDataRepository;
 import io.github.pricescrawler.content.repository.product.config.ProductDataConfig;
+import io.github.pricescrawler.content.repository.product.history.ProductHistoryRepository;
 import io.github.pricescrawler.content.repository.product.util.ProductUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
@@ -15,19 +16,14 @@ import java.util.Collections;
 
 @Log4j2
 @Service
+@RequiredArgsConstructor
 public class SimpleProductIncidentDataService implements ProductIncidentDataService {
     private final ProductDataConfig productDataConfig;
-    private final ProductDataRepository productDataRepository;
+    private final ProductHistoryRepository productHistoryRepository;
     private final ProductIncidentDataRepository productIncidentDataRepository;
 
-    public SimpleProductIncidentDataService(ProductDataConfig productDataConfig, ProductIncidentDataRepository productIncidentDataRepository, ProductDataRepository productDataRepository) {
-        this.productDataConfig = productDataConfig;
-        this.productIncidentDataRepository = productIncidentDataRepository;
-        this.productDataRepository = productDataRepository;
-    }
-
     @Override
-    public void saveIncident(ProductDao product, ProductDto lastProduct, String query) {
+    public void saveIncident(ProductHistoryDao product, ProductDto lastProduct, String query) {
         try {
             var optionalIncident = productIncidentDataRepository.findById(product.getId());
 
@@ -87,7 +83,7 @@ public class SimpleProductIncidentDataService implements ProductIncidentDataServ
     }
 
     private void mergeProductIncident(ProductIncidentDao productIncident) {
-        var optionalProduct = productDataRepository.findById(productIncident.getId());
+        var optionalProduct = productHistoryRepository.findById(productIncident.getId());
 
         optionalProduct.ifPresent(product -> {
             product.incrementHits(productIncident.getHits());
@@ -99,7 +95,7 @@ public class SimpleProductIncidentDataService implements ProductIncidentDataServ
                 product.setEanUpcList(ProductUtils.parseEanUpcList(product.getEanUpcList(), incident.getEanUpcList()));
             }
 
-            productDataRepository.save(product);
+            productHistoryRepository.save(product);
             productIncidentDataRepository.save(productIncident.merged().closed());
         });
     }

@@ -1,6 +1,6 @@
 package io.github.pricescrawler.content.common.dto.product;
 
-import io.github.pricescrawler.content.common.dao.product.ProductDao;
+import io.github.pricescrawler.content.common.dao.product.ProductHistoryDao;
 import io.github.pricescrawler.content.common.util.DataMapUtils;
 import io.github.pricescrawler.content.common.util.DateTimeUtils;
 import lombok.AllArgsConstructor;
@@ -16,7 +16,7 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductDataDto {
+public class ProductHistoryDto {
     private String locale;
     private String catalog;
     private String reference;
@@ -31,7 +31,7 @@ public class ProductDataDto {
     private List<PriceDto> prices;
     private Map<String, Object> data;
 
-    public ProductDataDto(ProductDao product) {
+    public ProductHistoryDto(ProductHistoryDao product) {
         this.locale = product.getLocale();
         this.catalog = product.getCatalog();
         this.reference = product.getReference();
@@ -46,7 +46,7 @@ public class ProductDataDto {
         this.data = DataMapUtils.getMapPublicKeys(product.getData());
     }
 
-    public ProductDataDto withPrices(ZonedDateTime startDate, ZonedDateTime endDate) {
+    public ProductHistoryDto withPrices(ZonedDateTime startDate, ZonedDateTime endDate) {
         if (startDate == null || endDate == null) {
             return this;
         }

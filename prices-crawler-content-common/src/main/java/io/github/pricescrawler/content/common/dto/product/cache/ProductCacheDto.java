@@ -14,6 +14,5 @@ import java.util.List;
 @AllArgsConstructor
 public class ProductCacheDto {
     private String date;
-
     private List<ProductDto> products;
 }

@@ -5,6 +5,7 @@ import io.github.pricescrawler.content.common.dto.product.ProductListItemDto;
 import io.github.pricescrawler.content.common.dto.product.ProductListShareDto;
 import io.github.pricescrawler.content.common.util.DateTimeUtils;
 import io.github.pricescrawler.content.repository.product.list.ProductListDataService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -12,13 +13,11 @@ import java.util.Collections;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class SimpleProductListService implements ProductListService {
-    public static final int PRODUCT_LIST_PRUNE_TIME = 2;
-    private final ProductListDataService productListDataService;
+    protected static final int PRODUCT_LIST_PRUNE_TIME = 2;
 
-    public SimpleProductListService(ProductListDataService productListDataService) {
-        this.productListDataService = productListDataService;
-    }
+    private final ProductListDataService productListDataService;
 
     @Override
     public List<ProductListItemDto> retrieveProductList(String id) {

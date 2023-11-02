@@ -9,7 +9,7 @@ import io.github.pricescrawler.content.common.dto.product.search.SearchProductsD
 import io.github.pricescrawler.content.common.util.DateTimeUtils;
 import io.github.pricescrawler.content.common.util.IdUtils;
 import io.github.pricescrawler.content.repository.catalog.CatalogDataService;
-import io.github.pricescrawler.content.repository.product.ProductDataService;
+import io.github.pricescrawler.content.repository.product.history.ProductHistoryService;
 import io.github.pricescrawler.content.service.product.base.BaseProductService;
 import io.github.pricescrawler.content.service.product.cache.ProductCacheService;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -24,7 +24,7 @@ import java.util.concurrent.CompletableFuture;
 @Qualifier("local.demo")
 public class DemoProductService extends BaseProductService {
     public DemoProductService(CatalogDataService catalogDataService,
-                              ProductDataService productDatabaseService,
+                              ProductHistoryService productDatabaseService,
                               ProductCacheService productCacheService) {
         super("local", "demo", catalogDataService, productDatabaseService, productCacheService);
     }
