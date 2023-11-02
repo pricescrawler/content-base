@@ -8,6 +8,7 @@ import io.github.pricescrawler.content.common.dto.product.search.SearchQueryDto;
 import io.github.pricescrawler.content.common.util.IdUtils;
 import io.github.pricescrawler.content.service.product.ProductService;
 import io.github.pricescrawler.content.service.product.provider.ProductServiceProvider;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -19,14 +20,11 @@ import java.util.Arrays;
 
 @CrossOrigin
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/products/search")
 @ConditionalOnProperty("prices.crawler.controller.product.search.enabled")
 public class ProductSearchController {
     private final ProductServiceProvider productServiceProvider;
-
-    public ProductSearchController(ProductServiceProvider productServiceProvider) {
-        this.productServiceProvider = productServiceProvider;
-    }
 
     @PostMapping
     public Flux<SearchProductsDto> searchProducts(@RequestBody SearchQueryDto searchQuery) {

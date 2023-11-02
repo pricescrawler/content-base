@@ -1,9 +1,10 @@
 package io.github.pricescrawler.content.controller.product;
 
 import io.github.pricescrawler.content.common.dto.product.ProductDto;
-import io.github.pricescrawler.content.common.dto.product.parser.RawProductContentDto;
+import io.github.pricescrawler.content.common.dto.product.parser.ProductContentDto;
 import io.github.pricescrawler.content.service.product.ProductService;
 import io.github.pricescrawler.content.service.product.provider.ProductServiceProvider;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -13,24 +14,21 @@ import java.util.List;
 
 @CrossOrigin
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/products/parser")
 @ConditionalOnProperty("prices.crawler.controller.product.parser.enabled")
 public class ProductContentParserController {
     private final ProductServiceProvider productServiceProvider;
 
-    public ProductContentParserController(ProductServiceProvider productServiceProvider) {
-        this.productServiceProvider = productServiceProvider;
-    }
-
     @PostMapping
-    public ProductDto parseProductFromContent(@RequestBody RawProductContentDto rawProductContent) {
+    public ProductDto parseProductFromContent(@RequestBody ProductContentDto rawProductContent) {
         var productService = getProductServiceFromCatalog(rawProductContent.getCatalog());
         return productService.parseProductFromContent(rawProductContent.getCatalog(), rawProductContent.getUrl(),
                 rawProductContent.getContent(), rawProductContent.getDate());
     }
 
     @PostMapping("/list")
-    public List<ProductDto> parseProductListFromContent(@RequestBody RawProductContentDto rawProductContent) {
+    public List<ProductDto> parseProductListFromContent(@RequestBody ProductContentDto rawProductContent) {
         var productService = getProductServiceFromCatalog(rawProductContent.getCatalog());
         return productService.parseProductsFromContent(rawProductContent.getCatalog(), rawProductContent.getContent(),
                 rawProductContent.getDate());

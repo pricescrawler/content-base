@@ -13,7 +13,7 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document("locales")
+@Document("locale")
 public class LocaleDao {
     @Id
     private String id;

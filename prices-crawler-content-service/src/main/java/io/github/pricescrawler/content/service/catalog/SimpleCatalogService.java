@@ -6,6 +6,7 @@ import io.github.pricescrawler.content.common.dto.catalog.LocaleDto;
 import io.github.pricescrawler.content.repository.catalog.CatalogDataRepository;
 import io.github.pricescrawler.content.repository.catalog.CategoryDataRepository;
 import io.github.pricescrawler.content.repository.catalog.LocaleDataRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -14,17 +15,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class SimpleCatalogService implements CatalogService {
     private final LocaleDataRepository localeDataRepository;
     private final CatalogDataRepository catalogDataRepository;
     private final CategoryDataRepository categoryDataRepository;
-
-    public SimpleCatalogService(CatalogDataRepository catalogDataRepository, LocaleDataRepository localeDataRepository,
-                                CategoryDataRepository categoryDataRepository) {
-        this.catalogDataRepository = catalogDataRepository;
-        this.localeDataRepository = localeDataRepository;
-        this.categoryDataRepository = categoryDataRepository;
-    }
 
     @Override
     public List<LocaleDto> searchLocales() {

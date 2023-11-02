@@ -13,7 +13,7 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document("categories")
+@Document("category")
 public class CategoryDao {
     @Id
     private String id;

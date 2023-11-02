@@ -4,13 +4,13 @@ import io.github.pricescrawler.content.common.dao.catalog.CatalogDao;
 import io.github.pricescrawler.content.common.dao.catalog.CategoryDao;
 import io.github.pricescrawler.content.common.dao.catalog.LocaleDao;
 import io.github.pricescrawler.content.common.dao.product.PriceDao;
-import io.github.pricescrawler.content.common.dao.product.ProductDao;
+import io.github.pricescrawler.content.common.dao.product.ProductHistoryDao;
 import io.github.pricescrawler.content.common.dto.product.ProductDto;
 import io.github.pricescrawler.content.common.util.DateTimeUtils;
 import io.github.pricescrawler.content.repository.catalog.CatalogDataRepository;
 import io.github.pricescrawler.content.repository.catalog.CategoryDataRepository;
 import io.github.pricescrawler.content.repository.catalog.LocaleDataRepository;
-import io.github.pricescrawler.content.repository.product.ProductDataRepository;
+import io.github.pricescrawler.content.repository.product.history.ProductHistoryRepository;
 import io.github.pricescrawler.content.repository.product.list.ProductListDataRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,7 +41,7 @@ public class BaseSpringBootTest {
     protected CategoryDataRepository categoryDataRepository;
 
     @Autowired
-    protected ProductDataRepository productDataRepository;
+    protected ProductHistoryRepository productHistoryRepository;
 
     @Autowired
     protected ProductListDataRepository productListDataRepository;
@@ -51,7 +51,7 @@ public class BaseSpringBootTest {
         localeDataRepository.save(getLocaleDao());
         catalogDataRepository.save(getCatalogDao());
         categoryDataRepository.save(getCategoryDao());
-        productDataRepository.save(getProductDao());
+        productHistoryRepository.save(getProductDao());
     }
 
     @AfterEach
@@ -59,7 +59,7 @@ public class BaseSpringBootTest {
         localeDataRepository.deleteAll();
         catalogDataRepository.deleteAll();
         categoryDataRepository.deleteAll();
-        productDataRepository.deleteAll();
+        productHistoryRepository.deleteAll();
     }
 
     protected CatalogDao getCatalogDao() {
@@ -85,7 +85,7 @@ public class BaseSpringBootTest {
                 .build();
     }
 
-    protected ProductDao getProductDao() {
+    protected ProductHistoryDao getProductDao() {
         var price = PriceDao.builder()
                 .regularPrice("1,20 €")
                 .campaignPrice("1,00 €")
@@ -93,7 +93,7 @@ public class BaseSpringBootTest {
                 .date(DateTimeUtils.getCurrentDateTime())
                 .build();
 
-        return ProductDao.builder()
+        return ProductHistoryDao.builder()
                 .id("local.demo.1")
                 .reference("1")
                 .locale("local")

@@ -1,30 +1,30 @@
-package io.github.pricescrawler.content.repository.product;
+package io.github.pricescrawler.content.repository.product.history;
 
 
-import io.github.pricescrawler.content.common.dao.product.ProductDao;
+import io.github.pricescrawler.content.common.dao.product.ProductHistoryDao;
 import io.github.pricescrawler.content.common.dto.product.search.SearchProductsDto;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface ProductDataService {
+public interface ProductHistoryService {
     /**
      * Finds a product with the specified locale, catalog, and reference.
      *
      * @param locale    the locale of the product to find
      * @param catalog   the catalog of the product to find
      * @param reference the reference of the product to find
-     * @return an Optional containing the {@link ProductDao} if found, or an empty Optional if not
+     * @return an Optional containing the {@link ProductHistoryDao} if found, or an empty Optional if not
      */
-    Optional<ProductDao> findProduct(String locale, String catalog, String reference);
+    Optional<ProductHistoryDao> findProduct(String locale, String catalog, String reference);
 
     /**
      * Finds all products with the specified EAN/UPC code.
      *
      * @param eanUpc the EAN/UPC code of the products to find
-     * @return a list of {@link ProductDao} with the specified EAN/UPC code
+     * @return a list of {@link ProductHistoryDao} with the specified EAN/UPC code
      */
-    List<ProductDao> findProductsByEanUpc(String eanUpc);
+    List<ProductHistoryDao> findProductsByEanUpc(String eanUpc);
 
     /**
      * Saves the results of a product search to the database.

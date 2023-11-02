@@ -6,6 +6,7 @@ import io.github.pricescrawler.content.common.dto.product.cache.ProductCacheDto;
 import io.github.pricescrawler.content.common.util.DateTimeUtils;
 import io.github.pricescrawler.content.common.util.IdUtils;
 import io.github.pricescrawler.content.repository.product.cache.ProductCacheDataRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
@@ -14,14 +15,11 @@ import java.util.List;
 
 @Log4j2
 @Service
+@RequiredArgsConstructor
 public class MongoDbProductCacheService implements ProductCacheService {
     private static final String PRODUCTS_CACHE_REMOVING = "Products Cache: removing {}";
 
     private final ProductCacheDataRepository productCacheDataRepository;
-
-    public MongoDbProductCacheService(ProductCacheDataRepository productCacheDataRepository) {
-        this.productCacheDataRepository = productCacheDataRepository;
-    }
 
     @Override
     public void cacheProductSearchResult(String locale, String catalog, String reference, List<ProductDto> products) {

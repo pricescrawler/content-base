@@ -1,6 +1,6 @@
 package io.github.pricescrawler.content.repository.product.incident;
 
-import io.github.pricescrawler.content.common.dao.product.ProductDao;
+import io.github.pricescrawler.content.common.dao.product.ProductHistoryDao;
 import io.github.pricescrawler.content.common.dto.product.ProductDto;
 
 public interface ProductIncidentDataService {
@@ -11,7 +11,7 @@ public interface ProductIncidentDataService {
      * @param lastProduct the latest version of the product
      * @param query       the search query used to find the product
      */
-    void saveIncident(ProductDao product, ProductDto lastProduct, String query);
+    void saveIncident(ProductHistoryDao product, ProductDto lastProduct, String query);
 
     /**
      * Closes an incident with the specified key.
