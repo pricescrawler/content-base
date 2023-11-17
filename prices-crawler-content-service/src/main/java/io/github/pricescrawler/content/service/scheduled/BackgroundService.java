@@ -15,7 +15,7 @@ public class BackgroundService {
     private final ProductCacheService mongoDbProductCacheService;
 
     public BackgroundService(ProductListService productListService,
-                             @Qualifier("localProductCacheService")
+                             @Qualifier("inMemoryProductCacheService")
                              ProductCacheService localProductCacheService,
                              @Qualifier("mongoDbProductCacheService")
                              ProductCacheService mongoDbProductCacheService) {

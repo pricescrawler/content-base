@@ -1,4 +1,4 @@
-package io.github.pricescrawler.content.repository.product;
+package io.github.pricescrawler.content.repository.product.history;
 
 import io.github.pricescrawler.content.common.dao.product.PriceDao;
 import io.github.pricescrawler.content.common.dao.product.ProductHistoryDao;
@@ -6,8 +6,6 @@ import io.github.pricescrawler.content.common.dto.product.ProductDto;
 import io.github.pricescrawler.content.common.dto.product.search.SearchProductsDto;
 import io.github.pricescrawler.content.common.util.IdUtils;
 import io.github.pricescrawler.content.repository.product.config.ProductDataConfig;
-import io.github.pricescrawler.content.repository.product.history.ProductHistoryRepository;
-import io.github.pricescrawler.content.repository.product.history.ProductHistoryService;
 import io.github.pricescrawler.content.repository.product.incident.ProductIncidentDataService;
 import io.github.pricescrawler.content.repository.product.util.ProductUtils;
 import lombok.RequiredArgsConstructor;
@@ -23,9 +21,9 @@ import java.util.concurrent.CompletableFuture;
 @Log4j2
 @Service
 @RequiredArgsConstructor
-public class SimpleProductHistoryService implements ProductHistoryService {
+public class SimpleProductHistoryDataService implements ProductHistoryDataService {
     private final ProductDataConfig productDataConfig;
-    private final ProductHistoryRepository productHistoryRepository;
+    private final ProductHistoryDataRepository productHistoryDataRepository;
     private final ProductIncidentDataService productIncidentDataService;
 
     @Value("${prices.crawler.product-incident.enabled:true}")
@@ -33,18 +31,18 @@ public class SimpleProductHistoryService implements ProductHistoryService {
 
     @Override
     public Optional<ProductHistoryDao> findProduct(String locale, String catalog, String reference) {
-        return productHistoryRepository.findById(IdUtils.parse(locale, catalog, reference));
+        return productHistoryDataRepository.findById(IdUtils.parse(locale, catalog, reference));
     }
 
     @Override
     public List<ProductHistoryDao> findProductsByEanUpc(String eanUpc) {
-        return productHistoryRepository.findAllByEanUpcList(eanUpc);
+        return productHistoryDataRepository.findAllByEanUpcList(eanUpc);
     }
 
     @Override
     public void saveSearchResult(SearchProductsDto searchProducts, String query) {
         for (var productDto : searchProducts.getProducts()) {
-            var optionalProduct = productHistoryRepository.findById(IdUtils.parse(searchProducts.getLocale(), searchProducts.getCatalog(), productDto.getReference()));
+            var optionalProduct = productHistoryDataRepository.findById(IdUtils.parse(searchProducts.getLocale(), searchProducts.getCatalog(), productDto.getReference()));
 
             if (optionalProduct.isPresent()) {
                 var productData = optionalProduct.get();
@@ -64,7 +62,7 @@ public class SimpleProductHistoryService implements ProductHistoryService {
         var isValid = !product.getName().isBlank();
 
         if (isValid) {
-            productHistoryRepository.save(product);
+            productHistoryDataRepository.save(product);
         }
     }
 

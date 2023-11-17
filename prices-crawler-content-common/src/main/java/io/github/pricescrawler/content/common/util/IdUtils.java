@@ -1,11 +1,10 @@
 package io.github.pricescrawler.content.common.util;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import lombok.experimental.UtilityClass;
 
 import java.util.Arrays;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@UtilityClass
 public class IdUtils {
     public static final String CATALOG_STORE_SEPARATOR = "#";
     public static final String ID_SEPARATOR = ".";

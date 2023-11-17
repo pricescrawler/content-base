@@ -1,24 +1,20 @@
 package io.github.pricescrawler.content.common.dao.product.incident;
 
+import io.github.pricescrawler.content.common.dao.base.Identifiable;
 import io.github.pricescrawler.content.common.dto.product.ProductDto;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
-import java.util.Map;
 
-@Data
-@Builder
+@Getter
+@Setter
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Document("product-incident")
-public class ProductIncidentDao {
-    @Id
-    private String id;
+public class ProductIncidentDao extends Identifiable {
     private List<ProductDto> products;
     private String description;
     @Builder.Default
@@ -28,9 +24,6 @@ public class ProductIncidentDao {
     @Builder.Default
     private int hits = 1;
     private List<String> searchTerms;
-    private String created;
-    private String updated;
-    private Map<String, Object> data;
 
     public ProductIncidentDao closed() {
         this.isClosed = true;

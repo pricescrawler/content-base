@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Log4j2
 @Primary
 @Service
-public class LocalProductCacheService implements ProductCacheService {
+public class InMemoryProductCacheService implements ProductCacheService {
 
     private static final String PRODUCTS_CACHE_REMOVING = "Products Cache: removing {}";
     private static final Map<String, ProductCacheDto> cachedProducts = new ConcurrentHashMap<>();

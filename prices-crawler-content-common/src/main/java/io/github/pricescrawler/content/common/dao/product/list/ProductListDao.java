@@ -1,25 +1,23 @@
 package io.github.pricescrawler.content.common.dao.product.list;
 
+import io.github.pricescrawler.content.common.dao.base.Identifiable;
 import io.github.pricescrawler.content.common.dto.product.ProductListItemDto;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
-import java.util.Map;
 
-@Data
-@Builder
+@Getter
+@Setter
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Document("product-list")
-public class ProductListDao {
-    @Id
-    private String id;
+public class ProductListDao extends Identifiable {
     private List<ProductListItemDto> items;
     private String date;
-    private Map<String, Object> data;
 }

@@ -63,6 +63,7 @@ public class SimpleCatalogService implements CatalogService {
                 categories.add(category);
             });
         }
+
         return categories;
     }
 }

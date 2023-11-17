@@ -7,7 +7,7 @@ import io.github.pricescrawler.content.common.dto.product.search.SearchProductsD
 import java.util.List;
 import java.util.Optional;
 
-public interface ProductHistoryService {
+public interface ProductHistoryDataService {
     /**
      * Finds a product with the specified locale, catalog, and reference.
      *
