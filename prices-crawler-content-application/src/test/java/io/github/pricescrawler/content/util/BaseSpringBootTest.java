@@ -24,7 +24,7 @@ import java.util.List;
 
 @AutoConfigureDataMongo
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"ACTIVE_PROFILE=demo"})
-public class BaseSpringBootTest {
+public abstract class BaseSpringBootTest {
     @Autowired
     protected MongoTemplate mongoTemplate;
 
