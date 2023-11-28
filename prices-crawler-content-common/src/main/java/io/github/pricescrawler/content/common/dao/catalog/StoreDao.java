@@ -4,11 +4,11 @@ import io.github.pricescrawler.content.common.dao.base.Identifiable;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-@Getter
-@Setter
+@Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class StoreDao extends Identifiable {
     private String name;
     @Builder.Default

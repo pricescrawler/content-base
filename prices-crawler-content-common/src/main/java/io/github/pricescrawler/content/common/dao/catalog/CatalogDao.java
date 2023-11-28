@@ -7,12 +7,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
-@Getter
-@Setter
+@Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Document("catalog")
+@EqualsAndHashCode(callSuper = true)
 public class CatalogDao extends Identifiable {
     private String name;
     private String baseUrl;

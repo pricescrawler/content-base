@@ -3,21 +3,21 @@ package io.github.pricescrawler.content.common.dao.product.cache;
 import io.github.pricescrawler.content.common.dto.product.ProductDto;
 import io.github.pricescrawler.content.common.dto.product.cache.ProductCacheDto;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
-@Getter
-@Setter
+@Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Document("product-cache")
+@EqualsAndHashCode(callSuper = true)
 public class ProductCacheDao extends ProductCacheDto {
     @Id
     private String id;

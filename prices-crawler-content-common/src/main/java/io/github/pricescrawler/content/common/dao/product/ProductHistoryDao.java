@@ -10,12 +10,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
-@Getter
-@Setter
+@Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Document("product-history")
+@EqualsAndHashCode(callSuper = true)
 public class ProductHistoryDao extends Identifiable {
     private String locale;
     private String catalog;

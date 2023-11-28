@@ -5,12 +5,12 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Getter
-@Setter
+@Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Document("category")
+@EqualsAndHashCode(callSuper = true)
 public class CategoryDao extends Identifiable {
     private String name;
     private String imageUrl;

@@ -8,12 +8,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
-@Getter
-@Setter
+@Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Document("product-incident")
+@EqualsAndHashCode(callSuper = true)
 public class ProductIncidentDao extends Identifiable {
     private List<ProductDto> products;
     private String description;
