@@ -1,22 +1,17 @@
 package io.github.pricescrawler.content.common.dao.catalog;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
+import io.github.pricescrawler.content.common.dao.base.Identifiable;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.Map;
-
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Document("category")
-public class CategoryDao {
-    @Id
-    private String id;
+@EqualsAndHashCode(callSuper = true)
+public class CategoryDao extends Identifiable {
     private String name;
     private String imageUrl;
     private String description;
@@ -26,7 +21,4 @@ public class CategoryDao {
     private boolean isCacheEnabled = true;
     @Builder.Default
     private boolean isHistoryEnabled = true;
-    private String created;
-    private String updated;
-    private Map<String, Object> data;
 }

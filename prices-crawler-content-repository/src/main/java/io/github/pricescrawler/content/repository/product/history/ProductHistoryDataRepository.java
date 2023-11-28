@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface ProductHistoryRepository extends MongoRepository<ProductHistoryDao, String> {
+public interface ProductHistoryDataRepository extends MongoRepository<ProductHistoryDao, String> {
     /**
      * Retrieves a list of products by EAN/UPC.
      *

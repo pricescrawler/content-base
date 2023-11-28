@@ -1,13 +1,12 @@
 package io.github.pricescrawler.content.common.util;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import lombok.experimental.UtilityClass;
 
 import java.time.Clock;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@UtilityClass
 public class DateTimeUtils {
 
     /**

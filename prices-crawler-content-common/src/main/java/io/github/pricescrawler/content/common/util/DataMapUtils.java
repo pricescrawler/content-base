@@ -1,15 +1,15 @@
 package io.github.pricescrawler.content.common.util;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import lombok.experimental.UtilityClass;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@UtilityClass
 public class DataMapUtils {
-    public static final String PUBLIC = ".public";
+    private static final String EMPTY = "";
+    private static final String PUBLIC = ".public";
 
     public static Map<String, Object> getMapPublicKeys(Map<String, Object> map) {
         if (map == null) {
@@ -23,6 +23,6 @@ public class DataMapUtils {
     }
 
     private static String removeString(String value) {
-        return value.replace(PUBLIC, "");
+        return value.replace(PUBLIC, EMPTY);
     }
 }

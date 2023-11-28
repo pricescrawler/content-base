@@ -6,7 +6,7 @@ import io.github.pricescrawler.content.common.dao.product.incident.ProductIncide
 import io.github.pricescrawler.content.common.dto.product.ProductDto;
 import io.github.pricescrawler.content.common.util.DateTimeUtils;
 import io.github.pricescrawler.content.repository.product.config.ProductDataConfig;
-import io.github.pricescrawler.content.repository.product.history.ProductHistoryRepository;
+import io.github.pricescrawler.content.repository.product.history.ProductHistoryDataRepository;
 import io.github.pricescrawler.content.repository.product.util.ProductUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -19,7 +19,7 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class SimpleProductIncidentDataService implements ProductIncidentDataService {
     private final ProductDataConfig productDataConfig;
-    private final ProductHistoryRepository productHistoryRepository;
+    private final ProductHistoryDataRepository productHistoryDataRepository;
     private final ProductIncidentDataRepository productIncidentDataRepository;
 
     @Override
@@ -83,7 +83,7 @@ public class SimpleProductIncidentDataService implements ProductIncidentDataServ
     }
 
     private void mergeProductIncident(ProductIncidentDao productIncident) {
-        var optionalProduct = productHistoryRepository.findById(productIncident.getId());
+        var optionalProduct = productHistoryDataRepository.findById(productIncident.getId());
 
         optionalProduct.ifPresent(product -> {
             product.incrementHits(productIncident.getHits());
@@ -95,7 +95,7 @@ public class SimpleProductIncidentDataService implements ProductIncidentDataServ
                 product.setEanUpcList(ProductUtils.parseEanUpcList(product.getEanUpcList(), incident.getEanUpcList()));
             }
 
-            productHistoryRepository.save(product);
+            productHistoryDataRepository.save(product);
             productIncidentDataRepository.save(productIncident.merged().closed());
         });
     }

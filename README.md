@@ -39,21 +39,21 @@ comparison and analysis.
 | 2  | spring.data.mongodb.database                      | String  | Mongodb database name        | -           |
 | 3  | prices.crawler.cache.enabled                      | Boolean | Cache service                | true        |
 | 4  | prices.crawler.history.enabled                    | Boolean | Prices history service       | true        |
-| 5  | prices.crawler.product-incident.enabled           | Boolean | Product incident check       | true        |
-| 6  | prices.crawler.controller.catalog.enabled         | Boolean | Catalog controller           | false       |
-| 7  | prices.crawler.controller.product.list.enabled    | Boolean | Product controller           | false       |
-| 8  | prices.crawler.controller.product.search.enabled  | Boolean | Product controller           | false       |
-| 9  | prices.crawler.controller.product.parser.enabled  | Boolean | Product controller           | false       |
-| 10 | prices.crawler.controller.product.history.enabled | Boolean | Product controller           | false       |
-| 11 | prices.crawler.background.service.cron            | String  | Cron string                  | 0 0 0 * * * |
-| 12 | prices.crawler.product.data.hintsEnabled          | String  | Product hints enabled        | true        |
-| 13 | prices.crawler.product.data.searchTermsEnabled    | String  | Product search terms enabled | true        |
+| 5  | prices.crawler.history-individual.enabled         | Boolean | Product controller           | true        |
+| 6  | prices.crawler.history-aggregated.enabled         | Boolean | Product controller           | true        |
+| 7  | prices.crawler.product-incident.enabled           | Boolean | Product incident check       | true        |
+| 8  | prices.crawler.controller.catalog.enabled         | Boolean | Catalog controller           | false       |
+| 9  | prices.crawler.controller.product.enabled         | Boolean | Product controller           | false       |
+| 10 | prices.crawler.controller.product.list.enabled    | Boolean | Product controller           | false       |
+| 11 | prices.crawler.controller.product.history.enabled | Boolean | Product controller           | false       |
+| 12 | prices.crawler.controller.product.search.enabled  | Boolean | Product controller           | false       |
+| 13 | prices.crawler.controller.product.parser.enabled  | Boolean | Product controller           | false       |
+| 14 | prices.crawler.background.service.cron            | String  | Cron string                  | 0 0 0 * * * |
+| 15 | prices.crawler.product.data.hintsEnabled          | String  | Product hints enabled        | true        |
+| 16 | prices.crawler.product.data.searchTermsEnabled    | String  | Product search terms enabled | true        |
 
 ### MongoDB Configurations
 
 - To ensure maximum performance create the following indexes:
     - _Collection:_ products
         - eanUpcList_1
-
-### Notes
-

@@ -9,7 +9,8 @@ import io.github.pricescrawler.content.common.dto.product.filter.FilterProductBy
 import io.github.pricescrawler.content.common.dto.product.search.SearchProductDto;
 import io.github.pricescrawler.content.common.dto.product.search.SearchProductsDto;
 import io.github.pricescrawler.content.repository.catalog.CatalogDataService;
-import io.github.pricescrawler.content.repository.product.history.ProductHistoryService;
+import io.github.pricescrawler.content.repository.product.ProductDataService;
+import io.github.pricescrawler.content.repository.product.history.ProductHistoryDataService;
 import io.github.pricescrawler.content.service.product.ProductService;
 import io.github.pricescrawler.content.service.product.cache.ProductCacheService;
 import lombok.extern.log4j.Log4j2;
@@ -23,23 +24,31 @@ import java.util.concurrent.CompletableFuture;
 public abstract class BaseProductService implements ProductService {
     protected final String localeId;
     protected final String catalogId;
-    private final ProductHistoryService productDatabaseService;
     private final ProductCacheService productCacheService;
+    private final ProductDataService productDataService;
+    private final ProductHistoryDataService productHistoryDataService;
     protected Optional<LocaleDao> optionalLocale;
     protected Optional<CatalogDao> optionalCatalog;
+
     @Value("${prices.crawler.cache.enabled:true}")
     private boolean isCacheEnabled;
     @Value("${prices.crawler.history.enabled:true}")
     private boolean isHistoryEnabled;
+    @Value("${prices.crawler.history.individual.enabled:true}")
+    private boolean isIndividualHistoryEnabled;
+    @Value("${prices.crawler.history.aggregated.enabled:true}")
+    private boolean isAggregatedHistoryEnabled;
 
     protected BaseProductService(String localeId, String catalogId,
                                  CatalogDataService catalogDataService,
-                                 ProductHistoryService productDatabaseService,
-                                 ProductCacheService productCacheService) {
+                                 ProductDataService productDataService,
+                                 ProductCacheService productCacheService,
+                                 ProductHistoryDataService productHistoryDataService) {
         this.localeId = localeId;
         this.catalogId = catalogId;
-        this.productDatabaseService = productDatabaseService;
         this.productCacheService = productCacheService;
+        this.productDataService = productDataService;
+        this.productHistoryDataService = productHistoryDataService;
         this.optionalLocale = catalogDataService.findLocaleById(localeId);
         this.optionalCatalog = catalogDataService.findCatalogByIdAndLocaleId(catalogId, localeId);
     }
@@ -112,7 +121,6 @@ public abstract class BaseProductService implements ProductService {
             return Mono.just(new SearchProductDto(localeId, composedCatalogKey, null));
         }
 
-
         if (productCacheService.isProductSearchResultByUrl(productUrl)) {
             var cache = productCacheService.retrieveProductSearchResultByUrl(productUrl);
             return Mono.just(new SearchProductDto(localeId, composedCatalogKey, cache));
@@ -157,9 +165,16 @@ public abstract class BaseProductService implements ProductService {
     private SearchProductDto saveProductToDatabase(SearchProductDto searchProductDto, String query,
                                                    String composedCatalogKey, String storeId) {
         if (isHistoryEnabled && isLocaleOrCatalogOrStoreHistoryEnabled(storeId)) {
-            var searchResultDto = new SearchProductsDto(localeId, composedCatalogKey,
-                    List.of(searchProductDto.getProduct()), generateCatalogData(storeId));
-            CompletableFuture.runAsync(() -> productDatabaseService.saveSearchResult(searchResultDto, query));
+
+            if (isAggregatedHistoryEnabled) {
+                var searchResultDto = new SearchProductsDto(localeId, composedCatalogKey,
+                        List.of(searchProductDto.getProduct()), generateCatalogData(storeId));
+                CompletableFuture.runAsync(() -> productHistoryDataService.saveSearchResult(searchResultDto, query));
+            }
+
+            if (isIndividualHistoryEnabled) {
+                CompletableFuture.runAsync(() -> productDataService.save(List.of(searchProductDto.getProduct())));
+            }
         }
 
         return searchProductDto;
@@ -221,6 +236,5 @@ public abstract class BaseProductService implements ProductService {
     private Optional<StoreDao> findStore(String storeId) {
         return optionalCatalog.flatMap(catalogDao -> catalogDao.getStores()
                 .stream().filter(value -> value.getId().equalsIgnoreCase(storeId)).findFirst());
-
     }
 }

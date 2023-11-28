@@ -1,26 +1,22 @@
 package io.github.pricescrawler.content.common.dao.product;
 
+import io.github.pricescrawler.content.common.dao.base.Identifiable;
 import io.github.pricescrawler.content.common.dto.product.ProductDto;
 import io.github.pricescrawler.content.common.util.DateTimeUtils;
 import io.github.pricescrawler.content.common.util.IdUtils;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
-import java.util.Map;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Document("product-history")
-public class ProductHistoryDao {
-    @Id
-    private String id;
+@EqualsAndHashCode(callSuper = true)
+public class ProductHistoryDao extends Identifiable {
     private String locale;
     private String catalog;
     private String reference;
@@ -34,21 +30,20 @@ public class ProductHistoryDao {
     @Builder.Default
     private Boolean isActive = true;
     private int hits;
-    private String created;
-    private String updated;
     private List<String> searchTerms;
     private List<PriceDao> prices;
-    private Map<String, Object> data;
 
     public ProductHistoryDao(String locale, String catalog, ProductDto product) {
         this.locale = locale;
         this.catalog = catalog;
-        this.created = DateTimeUtils.getCurrentDateTime();
+        setCreated(DateTimeUtils.getCurrentDateTime());
         updateFromProduct(product).incrementHits();
     }
 
     public ProductHistoryDao updateFromProduct(ProductDto product) {
-        this.id = IdUtils.parse(getLocale(), getCatalog(), product.getReference());
+        setId(IdUtils.parse(getLocale(), getCatalog(), product.getReference()));
+        setUpdated(DateTimeUtils.getCurrentDateTime());
+        setData(product.getData());
         this.reference = product.getReference();
         this.name = product.getName();
         this.brand = product.getBrand();
@@ -56,8 +51,6 @@ public class ProductHistoryDao {
         this.description = product.getDescription();
         this.imageUrl = product.getImageUrl();
         this.productUrl = product.getProductUrl();
-        this.updated = DateTimeUtils.getCurrentDateTime();
-        this.data = product.getData();
         return this;
     }
 

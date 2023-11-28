@@ -10,7 +10,7 @@ import io.github.pricescrawler.content.common.util.DateTimeUtils;
 import io.github.pricescrawler.content.repository.catalog.CatalogDataRepository;
 import io.github.pricescrawler.content.repository.catalog.CategoryDataRepository;
 import io.github.pricescrawler.content.repository.catalog.LocaleDataRepository;
-import io.github.pricescrawler.content.repository.product.history.ProductHistoryRepository;
+import io.github.pricescrawler.content.repository.product.history.ProductHistoryDataRepository;
 import io.github.pricescrawler.content.repository.product.list.ProductListDataRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +24,7 @@ import java.util.List;
 
 @AutoConfigureDataMongo
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"ACTIVE_PROFILE=demo"})
-public class BaseSpringBootTest {
+public abstract class BaseSpringBootTest {
     @Autowired
     protected MongoTemplate mongoTemplate;
 
@@ -41,7 +41,7 @@ public class BaseSpringBootTest {
     protected CategoryDataRepository categoryDataRepository;
 
     @Autowired
-    protected ProductHistoryRepository productHistoryRepository;
+    protected ProductHistoryDataRepository productHistoryDataRepository;
 
     @Autowired
     protected ProductListDataRepository productListDataRepository;
@@ -51,7 +51,7 @@ public class BaseSpringBootTest {
         localeDataRepository.save(getLocaleDao());
         catalogDataRepository.save(getCatalogDao());
         categoryDataRepository.save(getCategoryDao());
-        productHistoryRepository.save(getProductDao());
+        productHistoryDataRepository.save(getProductDao());
     }
 
     @AfterEach
@@ -59,7 +59,7 @@ public class BaseSpringBootTest {
         localeDataRepository.deleteAll();
         catalogDataRepository.deleteAll();
         categoryDataRepository.deleteAll();
-        productHistoryRepository.deleteAll();
+        productHistoryDataRepository.deleteAll();
     }
 
     protected CatalogDao getCatalogDao() {

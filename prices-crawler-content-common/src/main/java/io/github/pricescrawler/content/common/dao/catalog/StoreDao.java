@@ -1,18 +1,15 @@
 package io.github.pricescrawler.content.common.dao.catalog;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.util.Map;
+import io.github.pricescrawler.content.common.dao.base.Identifiable;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class StoreDao {
-    private String id;
+@EqualsAndHashCode(callSuper = true)
+public class StoreDao extends Identifiable {
     private String name;
     @Builder.Default
     private boolean isActive = true;
@@ -20,7 +17,4 @@ public class StoreDao {
     private boolean isCacheEnabled = true;
     @Builder.Default
     private boolean isHistoryEnabled = true;
-    private String created;
-    private String updated;
-    private Map<String, Object> data;
 }
