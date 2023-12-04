@@ -29,7 +29,7 @@ public class ProductSearchController {
     @PostMapping
     public Flux<SearchProductsDto> searchProducts(@RequestBody SearchQueryDto searchQuery) {
         var searchResults = Arrays.stream(searchQuery.getCatalogs())
-                .map(catalog -> getProductServiceFromCatalog(catalog)
+                .parallel().map(catalog -> getProductServiceFromCatalog(catalog)
                         .searchProductByQuery(new FilterProductByQueryDto(searchQuery, catalog)))
                 .toList();
 

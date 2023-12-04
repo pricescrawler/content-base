@@ -6,7 +6,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Version;
 
 import java.util.Map;
 
@@ -18,11 +17,6 @@ import java.util.Map;
 public class Identifiable {
     @Id
     private String id;
-
-    @Version
-    @EqualsAndHashCode.Exclude
-    private int lockVersion;
-
     private String created;
     private String updated;
     private Map<String, Object> data;

@@ -52,6 +52,7 @@ public class SimpleCatalogService implements CatalogService {
                 .forEach(categoryNameSet::add);
 
         var categories = new ArrayList<CategoryDto>();
+
         for (var categoryName : categoryNameSet) {
             var catalogs = catalogDataRepository
                     .findAllByLocalesContainsAndCategoriesContains(locale.getId(), categoryName)
