@@ -16,9 +16,7 @@ comparison and analysis.
 
 ## ⚠️ Known Issues
 
-- There is a known [issue](https://github.com/spring-projects/spring-boot/issues/35566#issuecomment-1561295798) with the
-  DATABASE_NAME environment variable not functioning properly after the Spring Boot 3.1 update.
-    - Solution: To resolve this issue, it is recommended to include the database name in the DATABASE_URL.
+Please report if you find any! 🙂
 
 ## 🕹️ Getting Started
 
@@ -39,8 +37,8 @@ comparison and analysis.
 | 2  | spring.data.mongodb.database                      | String  | Mongodb database name        | -           |
 | 3  | prices.crawler.cache.enabled                      | Boolean | Cache service                | true        |
 | 4  | prices.crawler.history.enabled                    | Boolean | Prices history service       | true        |
-| 5  | prices.crawler.history-individual.enabled         | Boolean | Product controller           | true        |
-| 6  | prices.crawler.history-aggregated.enabled         | Boolean | Product controller           | true        |
+| 5  | prices.crawler.history.individual.enabled         | Boolean | Product controller           | true        |
+| 6  | prices.crawler.history.aggregated.enabled         | Boolean | Product controller           | true        |
 | 7  | prices.crawler.product-incident.enabled           | Boolean | Product incident check       | true        |
 | 8  | prices.crawler.controller.catalog.enabled         | Boolean | Catalog controller           | false       |
 | 9  | prices.crawler.controller.product.enabled         | Boolean | Product controller           | false       |
