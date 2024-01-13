@@ -1,10 +1,10 @@
-FROM maven:3.8.5-openjdk-17 AS builder
+FROM maven:3.9.6-amazoncorretto-21 AS builder
 WORKDIR application
 COPY ./ ./
 RUN mvn clean package
 RUN java -Djarmode=layertools -jar prices-crawler-content-application/target/*.jar extract
 
-FROM openjdk:17-slim
+FROM amazoncorretto:21
 LABEL PROJECT_NAME=prices-crawler-content-api
 WORKDIR application
 COPY --from=builder application/dependencies/ ./

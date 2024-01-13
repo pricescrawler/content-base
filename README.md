@@ -11,8 +11,8 @@ comparison and analysis.
 
 | # | name    | Value   |
 |---|---------|---------|
-| 1 | `Java`  | `17`    |
-| 2 | `Maven` | `3.8.6` |
+| 1 | `Java`  | `21`    |
+| 2 | `Maven` | `3.9.6` |
 
 ## ⚠️ Known Issues
 
