@@ -15,6 +15,6 @@ public class GenericServiceProvider<T> {
 
     public T getServiceFromCatalog(String catalogAlias) {
         return BeanFactoryAnnotationUtils.qualifiedBeanOfType(appContext.getAutowireCapableBeanFactory(), classType,
-                IdUtils.parseCatalogFromComposedKey(catalogAlias));
+                IdUtils.extractCatalogFromComposedKey(catalogAlias));
     }
 }

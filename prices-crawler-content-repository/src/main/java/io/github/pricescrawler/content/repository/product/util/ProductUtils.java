@@ -33,16 +33,16 @@ public class ProductUtils {
         return uniqueEanUpcSet.stream().toList();
     }
 
-    public static List<PriceDao> parsePricesHistory(List<PriceDao> storedPrices, PriceDao priceDao) {
+    public static List<PriceDao> parsePricesHistory(List<PriceDao> storedPrices, PriceDao priceDao, String timezone) {
         try {
             if (storedPrices == null) {
                 return List.of(priceDao);
             }
 
             if (!storedPrices.isEmpty()) {
-                var lastStoredPrice = storedPrices.get(storedPrices.size() - 1);
+                var lastStoredPrice = storedPrices.getLast();
 
-                if (!DateTimeUtils.areDatesOnSameDay(lastStoredPrice.getDate(), priceDao.getDate())) {
+                if (!DateTimeUtils.areDatesOnSameDay(lastStoredPrice.getDate(), priceDao.getDate(), timezone)) {
                     storedPrices.add(priceDao);
                 }
             } else {

@@ -13,6 +13,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @EqualsAndHashCode(callSuper = true)
 public class LocaleDao extends Identifiable {
     private String name;
+    private String timezone;
     private String imageUrl;
     private String description;
     @Builder.Default

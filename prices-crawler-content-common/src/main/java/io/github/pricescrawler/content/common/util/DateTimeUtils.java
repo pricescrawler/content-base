@@ -2,9 +2,7 @@ package io.github.pricescrawler.content.common.util;
 
 import lombok.experimental.UtilityClass;
 
-import java.time.Clock;
-import java.time.Duration;
-import java.time.ZonedDateTime;
+import java.time.*;
 
 @UtilityClass
 public class DateTimeUtils {
@@ -26,8 +24,10 @@ public class DateTimeUtils {
     /**
      * Returns true if the two date-time strings represent the same day.
      */
-    public static boolean areDatesOnSameDay(String a, String b) {
-        return ZonedDateTime.parse(a).toLocalDate().isEqual(ZonedDateTime.parse(b).toLocalDate());
+    public static boolean areDatesOnSameDay(String date1, String date2, String timezone) {
+        var zoneId = timezone == null ? ZoneOffset.UTC : ZoneId.of(timezone);
+        return ZonedDateTime.parse(date1).withZoneSameInstant(zoneId).toLocalDate().isEqual(ZonedDateTime.parse(date2)
+                .withZoneSameInstant(zoneId).toLocalDate());
     }
 
     /**

@@ -26,10 +26,6 @@ public class IdUtils {
         return String.format("%s%s%s", catalog, CATALOG_STORE_SEPARATOR, store);
     }
 
-    public static String parseCatalogFromComposedKey(String value) {
-        return Arrays.stream(value.split(CATALOG_STORE_SEPARATOR)).findFirst().orElse(value);
-    }
-
     public static String parseStoreFromComposedKey(String value) {
         var catalogAndStore = value.split(CATALOG_STORE_SEPARATOR);
 
@@ -38,6 +34,14 @@ public class IdUtils {
         }
 
         return null;
+    }
+
+    public static String extractCatalogFromComposedKey(String value) {
+        return Arrays.stream(value.split(CATALOG_STORE_SEPARATOR)).findFirst().orElse(value);
+    }
+
+    public static String extractLocaleFromKey(String value) {
+        return Arrays.stream(value.split(ID_SEPARATOR_REGEX)).findFirst().orElse(value);
     }
 
     public static String removeLocaleFromComposedKey(String value) {

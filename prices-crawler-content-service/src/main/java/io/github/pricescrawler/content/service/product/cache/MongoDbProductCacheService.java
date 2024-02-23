@@ -6,6 +6,7 @@ import io.github.pricescrawler.content.common.dto.product.cache.ProductCacheDto;
 import io.github.pricescrawler.content.common.util.DateTimeUtils;
 import io.github.pricescrawler.content.common.util.IdUtils;
 import io.github.pricescrawler.content.repository.product.cache.ProductCacheDataRepository;
+import io.github.pricescrawler.content.service.catalog.CatalogService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.util.List;
 public class MongoDbProductCacheService implements ProductCacheService {
     private static final String PRODUCTS_CACHE_REMOVING = "Products Cache: removing {}";
 
+    private final CatalogService catalogService;
     private final ProductCacheDataRepository productCacheDataRepository;
 
     @Override
@@ -41,8 +43,9 @@ public class MongoDbProductCacheService implements ProductCacheService {
             if (productCacheDao.isPresent()) {
                 try {
                     var products = productCacheDao.get();
+                    var timezone = catalogService.searchLocaleById(locale).orElseThrow().getTimezone();
 
-                    if (DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), products.getDate())) {
+                    if (DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), products.getDate(), timezone)) {
                         isCached = true;
                     } else {
                         productCacheDataRepository.deleteById(key);
@@ -64,7 +67,9 @@ public class MongoDbProductCacheService implements ProductCacheService {
         for (var element : productCacheDataRepository.findAll()) {
             for (var product : element.getProducts()) {
                 if (product.getProductUrl().equals(url)) {
-                    if (DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), product.getDate())) {
+                    var timezone = catalogService.searchLocaleById(IdUtils.extractLocaleFromKey(product.getId())).orElseThrow().getTimezone();
+
+                    if (DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), product.getDate(), timezone)) {
                         return true;
                     } else {
                         log.info(PRODUCTS_CACHE_REMOVING, url);
@@ -111,7 +116,9 @@ public class MongoDbProductCacheService implements ProductCacheService {
     @Override
     public void deleteOutdatedProductSearchResults() {
         for (var entry : productCacheDataRepository.findAll()) {
-            if (!DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), entry.getDate())) {
+            var timezone = catalogService.searchLocaleById(entry.getId()).orElseThrow().getTimezone();
+
+            if (!DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), entry.getDate(), timezone)) {
                 log.info(PRODUCTS_CACHE_REMOVING, entry.getId());
                 productCacheDataRepository.deleteById(entry.getId());
             }

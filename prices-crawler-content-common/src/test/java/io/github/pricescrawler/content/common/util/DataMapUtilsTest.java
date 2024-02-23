@@ -9,13 +9,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DataMapUtilsTest {
     @Test
-    void getMapPublicKeys_ShouldReturnEmptyMap_WhenInputMapIsNull() {
+    void getMapPublicKeys_shouldReturnEmptyMap_whenInputMapIsNull() {
         var result = DataMapUtils.getMapPublicKeys(null);
         assertEquals(Collections.emptyMap(), result);
     }
 
     @Test
-    void getMapPublicKeys_ShouldReturnMapWithPublicKeysOnly() {
+    void getMapPublicKeys_shouldReturnMapWithPublicKeysOnly() {
         var inputMap = new HashMap<String, Object>();
         inputMap.put("key1.public", "value1");
         inputMap.put("key2", "value2");

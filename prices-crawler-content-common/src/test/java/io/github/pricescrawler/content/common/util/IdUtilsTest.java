@@ -8,86 +8,63 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 class IdUtilsTest {
 
     @Test
-    void parse_ShouldReturnParsedStringWithLocaleAndCatalog() {
-        String locale = "local";
-        String catalog = "demo";
-        String expected = "local.demo";
-
-        String result = IdUtils.parse(locale, catalog);
-        assertEquals(expected, result);
+    void parse_shouldReturnParsedStringWithLocaleAndCatalog() {
+        var locale = "local";
+        var catalog = "demo";
+        assertEquals("local.demo", IdUtils.parse(locale, catalog));
     }
 
     @Test
-    void parse_ShouldReturnParsedStringWithLocaleCatalogAndReference() {
-        String locale = "local";
-        String catalog = "demo";
-        String reference = "1";
-        String expected = "local.demo.1";
-
-        String result = IdUtils.parse(locale, catalog, reference);
-        assertEquals(expected, result);
+    void parse_shouldReturnParsedStringWithLocaleCatalogAndReference() {
+        var locale = "local";
+        var catalog = "demo";
+        var reference = "1";
+        assertEquals("local.demo.1", IdUtils.parse(locale, catalog, reference));
     }
 
     @Test
-    void parse_ShouldReturnParsedStringWithLocaleCatalogStoreAndReference() {
-        String locale = "local";
-        String catalog = "demo";
-        String store = "store";
-        String reference = "1";
-        String expected = "local.demo#store.1";
-
-        String result = IdUtils.parse(locale, catalog, store, reference);
-        assertEquals(expected, result);
+    void parse_shouldReturnParsedStringWithLocaleCatalogStoreAndReference() {
+        var locale = "local";
+        var catalog = "demo";
+        var store = "store";
+        var reference = "1";
+        assertEquals("local.demo#store.1", IdUtils.parse(locale, catalog, store, reference));
     }
 
     @Test
-    void parseCatalogComposeKey_ShouldReturnComposedKeyFromCatalogAndStore() {
-        String catalog = "demo";
-        String store = "store";
-        String expected = "demo#store";
-
-        String result = IdUtils.parseCatalogComposeKey(catalog, store);
-        assertEquals(expected, result);
+    void parseCatalogComposedKey_shouldReturnComposedKeyFromCatalogAndStore() {
+        assertEquals("demo#store", IdUtils.parseCatalogComposeKey("demo", "store"));
     }
 
     @Test
-    void parseCatalogFromComposedKey_ShouldReturnCatalogFromComposedKey() {
-        String composedKey = "demo#store";
-        String expected = "demo";
-
-        String result = IdUtils.parseCatalogFromComposedKey(composedKey);
-        assertEquals(expected, result);
+    void parseCatalogFromComposedKey_shouldReturnCatalogFromComposedKey() {
+        assertEquals("demo", IdUtils.extractCatalogFromComposedKey("demo#store"));
     }
 
     @Test
-    void parseStoreFromComposedKey_ShouldReturnStoreFromComposedKey() {
-        String composedKey = "demo#store";
-        String expected = "store";
-
-        String result = IdUtils.parseStoreFromComposedKey(composedKey);
-        assertEquals(expected, result);
+    void parseStoreFromComposedKey_shouldReturnStoreFromComposedKey() {
+        assertEquals("store", IdUtils.parseStoreFromComposedKey("demo#store"));
     }
 
     @Test
-    void parseStoreFromComposedKey_ShouldReturnNullIfNoStore() {
-        String composedKey = "demo";
-        String result = IdUtils.parseStoreFromComposedKey(composedKey);
-        assertNull(result);
+    void parseStoreFromComposedKey_shouldReturnNullIfNoStore() {
+        assertNull(IdUtils.parseStoreFromComposedKey("demo"));
     }
 
     @Test
-    void removeLocaleFromComposedKey_ShouldRemoveLocaleFromComposedKey() {
-        String composedKey = "local.demo#store.1";
-        String expected = "demo#store.1";
-
-        String result = IdUtils.removeLocaleFromComposedKey(composedKey);
-        assertEquals(expected, result);
+    void extractLocaleFromKey() {
+        assertEquals("local", IdUtils.extractLocaleFromKey("local.demo"));
     }
 
     @Test
-    void removeLocaleFromComposedKey_ShouldReturnSameKeyIfNoLocale() {
-        String composedKey = "demo";
-        String result = IdUtils.removeLocaleFromComposedKey(composedKey);
+    void removeLocaleFromComposedKey_shouldRemoveLocaleFromComposedKey() {
+        assertEquals("demo#store.1", IdUtils.removeLocaleFromComposedKey("local.demo#store.1"));
+    }
+
+    @Test
+    void removeLocaleFromComposedKey_shouldReturnSameKeyIfNoLocale() {
+        var composedKey = "demo";
+        var result = IdUtils.removeLocaleFromComposedKey(composedKey);
         assertEquals(composedKey, result);
     }
 }

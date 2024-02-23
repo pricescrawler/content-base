@@ -4,6 +4,8 @@ import io.github.pricescrawler.content.common.dto.product.ProductDto;
 import io.github.pricescrawler.content.common.dto.product.cache.ProductCacheDto;
 import io.github.pricescrawler.content.common.util.DateTimeUtils;
 import io.github.pricescrawler.content.common.util.IdUtils;
+import io.github.pricescrawler.content.service.catalog.CatalogService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -16,10 +18,13 @@ import java.util.concurrent.ConcurrentHashMap;
 @Log4j2
 @Primary
 @Service
+@RequiredArgsConstructor
 public class InMemoryProductCacheService implements ProductCacheService {
 
     private static final String PRODUCTS_CACHE_REMOVING = "Products Cache: removing {}";
     private static final Map<String, ProductCacheDto> cachedProducts = new ConcurrentHashMap<>();
+
+    private final CatalogService catalogService;
 
     @Override
     public void cacheProductSearchResult(String locale, String catalog, String reference, List<ProductDto> products) {
@@ -34,9 +39,10 @@ public class InMemoryProductCacheService implements ProductCacheService {
 
         if (cachedProducts.containsKey(key)) {
             var products = cachedProducts.get(key);
+            var timezone = catalogService.searchLocaleById(locale).orElseThrow().getTimezone();
 
             try {
-                if (DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), products.getDate())) {
+                if (DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), products.getDate(), timezone)) {
                     isCached = true;
                 } else {
                     cachedProducts.remove(key);
@@ -57,7 +63,9 @@ public class InMemoryProductCacheService implements ProductCacheService {
         for (var element : cachedProducts.entrySet()) {
             for (var product : element.getValue().getProducts()) {
                 if (product.getProductUrl().equals(url)) {
-                    if (DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), product.getDate())) {
+                    var timezone = catalogService.searchLocaleById(IdUtils.extractLocaleFromKey(product.getId())).orElseThrow().getTimezone();
+
+                    if (DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), product.getDate(), timezone)) {
                         return true;
                     } else {
                         log.info(PRODUCTS_CACHE_REMOVING, url);
@@ -105,7 +113,9 @@ public class InMemoryProductCacheService implements ProductCacheService {
     @Override
     public void deleteOutdatedProductSearchResults() {
         for (var entry : cachedProducts.entrySet()) {
-            if (!DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), entry.getValue().getDate())) {
+            var timezone = catalogService.searchLocaleById(entry.getKey()).orElseThrow().getTimezone();
+
+            if (!DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), entry.getValue().getDate(), timezone)) {
                 log.info(PRODUCTS_CACHE_REMOVING, entry.getKey());
                 cachedProducts.remove(entry.getKey());
             }

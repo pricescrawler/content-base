@@ -22,7 +22,7 @@ class BackgroundServiceTest {
     private ProductCacheService mongoDbProductCacheService;
 
     @Test
-    void startBackgroundService_ShouldDeleteOutdatedProductListsAndSearchResults() {
+    void startBackgroundService_shouldDeleteOutdatedProductListsAndSearchResults() {
         var backgroundService = new BackgroundService(
                 productListService, inMemoryProductCacheService, mongoDbProductCacheService);
 
