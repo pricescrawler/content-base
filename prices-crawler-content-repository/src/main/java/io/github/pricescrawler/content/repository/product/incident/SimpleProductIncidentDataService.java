@@ -5,6 +5,8 @@ import io.github.pricescrawler.content.common.dao.product.ProductHistoryDao;
 import io.github.pricescrawler.content.common.dao.product.incident.ProductIncidentDao;
 import io.github.pricescrawler.content.common.dto.product.ProductDto;
 import io.github.pricescrawler.content.common.util.DateTimeUtils;
+import io.github.pricescrawler.content.common.util.IdUtils;
+import io.github.pricescrawler.content.repository.catalog.CatalogDataService;
 import io.github.pricescrawler.content.repository.product.config.ProductDataConfig;
 import io.github.pricescrawler.content.repository.product.history.ProductHistoryDataRepository;
 import io.github.pricescrawler.content.repository.product.util.ProductUtils;
@@ -19,6 +21,7 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class SimpleProductIncidentDataService implements ProductIncidentDataService {
     private final ProductDataConfig productDataConfig;
+    private final CatalogDataService catalogDataService;
     private final ProductHistoryDataRepository productHistoryDataRepository;
     private final ProductIncidentDataRepository productIncidentDataRepository;
 
@@ -28,10 +31,12 @@ public class SimpleProductIncidentDataService implements ProductIncidentDataServ
             var optionalIncident = productIncidentDataRepository.findById(product.getId());
 
             if (optionalIncident.isPresent()) {
-                ProductIncidentDao incident = optionalIncident.get();
-                ProductDto lastStoredPrice = incident.getProducts().get(incident.getProducts().size() - 1);
+                var incident = optionalIncident.get();
+                var lastStoredPrice = incident.getProducts().getLast();
+                var timezone = catalogDataService.findLocaleById(IdUtils.extractLocaleFromKey(lastStoredPrice.getId()))
+                        .orElseThrow().getTimezone();
 
-                if (!DateTimeUtils.areDatesOnSameDay(lastStoredPrice.getDate(), lastProduct.getDate())) {
+                if (!DateTimeUtils.areDatesOnSameDay(lastStoredPrice.getDate(), lastProduct.getDate(), timezone)) {
                     incident.addProduct(lastProduct);
                 }
 
@@ -84,13 +89,15 @@ public class SimpleProductIncidentDataService implements ProductIncidentDataServ
 
     private void mergeProductIncident(ProductIncidentDao productIncident) {
         var optionalProduct = productHistoryDataRepository.findById(productIncident.getId());
+        var timezone = catalogDataService.findLocaleById(IdUtils.extractLocaleFromKey(productIncident.getId()))
+                .orElseThrow().getTimezone();
 
         optionalProduct.ifPresent(product -> {
             product.incrementHits(productIncident.getHits());
 
             for (var incident : productIncident.getProducts()) {
                 product.updateFromProduct(incident);
-                product.setPrices(ProductUtils.parsePricesHistory(product.getPrices(), new PriceDao(incident)));
+                product.setPrices(ProductUtils.parsePricesHistory(product.getPrices(), new PriceDao(incident), timezone));
                 product.setSearchTerms(ProductUtils.parseSearchTerms(product.getSearchTerms(), null));
                 product.setEanUpcList(ProductUtils.parseEanUpcList(product.getEanUpcList(), incident.getEanUpcList()));
             }

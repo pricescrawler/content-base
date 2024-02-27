@@ -10,76 +10,61 @@ import static org.junit.jupiter.api.Assertions.*;
 class DateTimeUtilsTest {
 
     @Test
-    void getCurrentDateTime_ShouldReturnCurrentDateTimeInUTC() {
-        String result = DateTimeUtils.getCurrentDateTime();
-        assertNotNull(result);
+    void getCurrentDateTime_shouldReturnCurrentDateTimeInUTC() {
+        assertNotNull(DateTimeUtils.getCurrentDateTime());
     }
 
     @Test
-    void getDateFromDateTime_ShouldReturnDateFromDateTimeString() {
-        String dateTime = "2023-06-01T10:15:30Z";
-        String expectedDate = "2023-06-01";
-
-        String result = DateTimeUtils.getDateFromDateTime(dateTime);
-        assertEquals(expectedDate, result);
+    void getDateFromDateTime_shouldReturnDateFromDateTimeString() {
+        var dateTime = "2023-06-01T10:15:30Z";
+        assertEquals("2023-06-01", DateTimeUtils.getDateFromDateTime(dateTime));
     }
 
     @Test
-    void areDatesOnSameDay_ShouldReturnTrueForSameDayDates() {
-        String date1 = "2023-06-01T10:00:00Z";
-        String date2 = "2023-06-01T15:30:00Z";
+    void areDatesOnSameDay_shouldReturnTrueForSameDayDates() {
+        var date1 = "2023-06-01T10:00:00Z";
+        var date2 = "2023-06-01T15:30:00Z";
 
-        boolean result = DateTimeUtils.areDatesOnSameDay(date1, date2);
-        assertTrue(result);
+        assertTrue(DateTimeUtils.areDatesOnSameDay(date1, date2, null));
     }
 
     @Test
-    void areDatesOnSameDay_ShouldReturnFalseForDifferentDayDates() {
-        String date1 = "2023-06-01T10:00:00Z";
-        String date2 = "2023-06-02T15:30:00Z";
-
-        boolean result = DateTimeUtils.areDatesOnSameDay(date1, date2);
-        assertFalse(result);
+    void areDatesOnSameDay_shouldReturnFalseForDifferentDayDates() {
+        var date1 = "2023-06-01T10:00:00Z";
+        var date2 = "2023-06-02T15:30:00Z";
+        assertFalse(DateTimeUtils.areDatesOnSameDay(date1, date2, null));
     }
 
     @Test
-    void isDateBetween_ShouldReturnTrueForDateWithinRange() {
-        String date = "2023-06-01T12:00:00Z";
-        ZonedDateTime beforeDate = ZonedDateTime.parse("2023-06-01T10:00:00Z");
-        ZonedDateTime afterDate = ZonedDateTime.parse("2023-06-01T15:00:00Z");
-
-        boolean result = DateTimeUtils.isDateBetween(date, beforeDate, afterDate);
-        assertTrue(result);
+    void isDateBetween_shouldReturnTrueForDateWithinRange() {
+        var date = "2023-06-01T12:00:00Z";
+        var beforeDate = ZonedDateTime.parse("2023-06-01T10:00:00Z");
+        var afterDate = ZonedDateTime.parse("2023-06-01T15:00:00Z");
+        assertTrue(DateTimeUtils.isDateBetween(date, beforeDate, afterDate));
     }
 
     @Test
-    void isDateBetween_ShouldReturnFalseForDateOutsideRange() {
-        String date = "2023-06-01T16:00:00Z";
-        ZonedDateTime beforeDate = ZonedDateTime.parse("2023-06-01T10:00:00Z");
-        ZonedDateTime afterDate = ZonedDateTime.parse("2023-06-01T15:00:00Z");
-
-        boolean result = DateTimeUtils.isDateBetween(date, beforeDate, afterDate);
-        assertFalse(result);
+    void isDateBetween_shouldReturnFalseForDateOutsideRange() {
+        var date = "2023-06-01T16:00:00Z";
+        var beforeDate = ZonedDateTime.parse("2023-06-01T10:00:00Z");
+        var afterDate = ZonedDateTime.parse("2023-06-01T15:00:00Z");
+        assertFalse(DateTimeUtils.isDateBetween(date, beforeDate, afterDate));
     }
 
     @Test
-    void getDurationBetweenDates_ShouldReturnDurationBetweenDates() {
-        String startDate = "2023-06-01T10:00:00Z";
-        String endDate = "2023-06-01T15:30:00Z";
-        Duration expectedDuration = Duration.ofHours(5).plusMinutes(30);
-
-        Duration result = DateTimeUtils.getDurationBetweenDates(startDate, endDate);
-        assertEquals(expectedDuration, result);
+    void getDurationBetweenDates_shouldReturnDurationBetweenDates() {
+        var startDate = "2023-06-01T10:00:00Z";
+        var endDate = "2023-06-01T15:30:00Z";
+        var expectedDuration = Duration.ofHours(5).plusMinutes(30);
+        assertEquals(expectedDuration, DateTimeUtils.getDurationBetweenDates(startDate, endDate));
     }
 
     @Test
-    void getDateAfterDuration_ShouldReturnDateAfterDuration() {
-        String startDate = "2023-06-01T10:00:00Z";
-        Duration duration = Duration.ofDays(3);
-        String expectedDate = "2023-06-04";
-
-        String result = DateTimeUtils.getDateAfterDuration(startDate, duration);
-        assertEquals(expectedDate, result);
+    void getDateAfterDuration_shouldReturnDateAfterDuration() {
+        var startDate = "2023-06-01T10:00:00Z";
+        var duration = Duration.ofDays(3);
+        var expectedDate = "2023-06-04";
+        assertEquals(expectedDate, DateTimeUtils.getDateAfterDuration(startDate, duration));
     }
 }
 

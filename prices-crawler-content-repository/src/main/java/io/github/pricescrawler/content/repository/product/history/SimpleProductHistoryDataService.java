@@ -5,6 +5,7 @@ import io.github.pricescrawler.content.common.dao.product.ProductHistoryDao;
 import io.github.pricescrawler.content.common.dto.product.ProductDto;
 import io.github.pricescrawler.content.common.dto.product.search.SearchProductsDto;
 import io.github.pricescrawler.content.common.util.IdUtils;
+import io.github.pricescrawler.content.repository.catalog.CatalogDataService;
 import io.github.pricescrawler.content.repository.product.config.ProductDataConfig;
 import io.github.pricescrawler.content.repository.product.incident.ProductIncidentDataService;
 import io.github.pricescrawler.content.repository.product.util.ProductUtils;
@@ -23,8 +24,9 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor
 public class SimpleProductHistoryDataService implements ProductHistoryDataService {
     private final ProductDataConfig productDataConfig;
-    private final ProductHistoryDataRepository productHistoryDataRepository;
+    private final CatalogDataService catalogDataService;
     private final ProductIncidentDataService productIncidentDataService;
+    private final ProductHistoryDataRepository productHistoryDataRepository;
 
     @Value("${prices.crawler.product-incident.enabled:true}")
     private boolean isProductIncidentEnabled;
@@ -78,7 +80,9 @@ public class SimpleProductHistoryDataService implements ProductHistoryDataServic
     }
 
     private ProductHistoryDao updatedProductData(ProductHistoryDao product, ProductDto lastProduct, String query) {
-        product.setPrices(ProductUtils.parsePricesHistory(product.getPrices(), new PriceDao(lastProduct)));
+        var timezone = catalogDataService.findLocaleById(product.getLocale()).orElseThrow().getTimezone();
+
+        product.setPrices(ProductUtils.parsePricesHistory(product.getPrices(), new PriceDao(lastProduct), timezone));
         product.setEanUpcList(ProductUtils.parseEanUpcList(product.getEanUpcList(), lastProduct.getEanUpcList()));
 
         if (productDataConfig.isHintsEnabled()) {

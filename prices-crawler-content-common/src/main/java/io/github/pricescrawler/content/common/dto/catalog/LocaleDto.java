@@ -17,6 +17,7 @@ import java.util.Map;
 public class LocaleDto {
     private String id;
     private String name;
+    private String timezone;
     private String imageUrl;
     private String description;
     private boolean isActive;
@@ -26,6 +27,7 @@ public class LocaleDto {
     public LocaleDto(LocaleDao locale) {
         this.id = locale.getId();
         this.name = locale.getName();
+        this.timezone = locale.getTimezone();
         this.imageUrl = locale.getImageUrl();
         this.description = locale.getDescription();
         this.isActive = locale.isActive();
