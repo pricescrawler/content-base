@@ -7,6 +7,6 @@
     <parent>
         <groupId>io.github.pricescrawler.content</groupId>
         <artifactId>prices-crawler-content-base</artifactId>
-        <version>0.4.1</version>
+        <version>0.4.2-SNAPSHOT</version>
     </parent>
 </project>
