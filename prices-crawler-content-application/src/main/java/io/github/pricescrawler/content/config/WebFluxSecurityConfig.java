@@ -17,8 +17,7 @@ public class WebFluxSecurityConfig {
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers("/actuator/health").permitAll()
                         .pathMatchers("/actuator/**").authenticated()
-                        .anyExchange().permitAll()
-                )
+                        .anyExchange().permitAll())
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .httpBasic(Customizer.withDefaults());
 

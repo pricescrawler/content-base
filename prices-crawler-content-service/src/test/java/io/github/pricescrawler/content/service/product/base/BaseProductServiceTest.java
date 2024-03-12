@@ -15,9 +15,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.anyString;
@@ -54,18 +54,18 @@ class BaseProductServiceTest {
             }
 
             @Override
-            protected CompletableFuture<SearchProductsDto> searchItemLogic(FilterProductByQueryDto filterProduct) {
-                return CompletableFuture.completedFuture(new SearchProductsDto());
+            protected Mono<SearchProductsDto> searchItemLogic(FilterProductByQueryDto filterProduct) {
+                return Mono.just(new SearchProductsDto());
             }
 
             @Override
-            protected CompletableFuture<SearchProductDto> searchItemByProductUrlLogic(FilterProductByUrlDto filterProductByUrl) {
-                return CompletableFuture.completedFuture(new SearchProductDto());
+            protected Mono<SearchProductDto> searchItemByProductUrlLogic(FilterProductByUrlDto filterProductByUrl) {
+                return Mono.just(new SearchProductDto());
             }
 
             @Override
-            protected CompletableFuture<ProductListItemDto> updateItemLogic(ProductListItemDto productListItem) {
-                return CompletableFuture.completedFuture(productListItem);
+            protected Mono<ProductListItemDto> updateItemLogic(ProductListItemDto productListItem) {
+                return Mono.just(productListItem);
             }
         };
     }
@@ -75,7 +75,7 @@ class BaseProductServiceTest {
         var filterProductByQueryDto = new FilterProductByQueryDto();
         var result = productService.searchProductByQuery(filterProductByQueryDto);
 
-        assertNotNull(result.block());
+        assertNotNull(result.share().block());
     }
 
     @Test
@@ -85,8 +85,8 @@ class BaseProductServiceTest {
         var filterProductByQueryDto = FilterProductByQueryDto.builder().composedCatalogKey("local.demo.1").query("dummy").build();
         var result = productService.searchProductByQuery(filterProductByQueryDto);
 
-        assertNotNull(result.block());
-        assertTrue(result.block().getProducts().isEmpty());
+        assertNotNull(result.share().block());
+        assertTrue(result.share().block().getProducts().isEmpty());
     }
 
     @Test
@@ -96,7 +96,7 @@ class BaseProductServiceTest {
         var filterProductByQueryDto = FilterProductByQueryDto.builder().composedCatalogKey("local.demo.1").query("dummy").build();
         var result = productService.searchProductByQuery(filterProductByQueryDto);
 
-        assertNotNull(result.block());
+        assertNotNull(result.share().block());
     }
 
     @Test
@@ -104,8 +104,8 @@ class BaseProductServiceTest {
         var filterProductByUrlDto = FilterProductByUrlDto.builder().composedCatalogKey("local.demo.1").url("https://dummy.local").build();
         var result = productService.searchProductByProductUrl(filterProductByUrlDto);
 
-        assertNotNull(result.block());
-        assertNull(result.block().getProduct());
+        assertNotNull(result.share().block());
+        assertNull(result.share().block().getProduct());
     }
 
     @Test
@@ -115,8 +115,8 @@ class BaseProductServiceTest {
         var filterProductByUrlDto = FilterProductByUrlDto.builder().composedCatalogKey("local.demo.1").url("https://dummy.local").build();
         var result = productService.searchProductByProductUrl(filterProductByUrlDto);
 
-        assertNotNull(result.block());
-        assertNull(result.block().getProduct());
+        assertNotNull(result.share().block());
+        assertNull(result.share().block().getProduct());
     }
 
     @Test
@@ -124,7 +124,7 @@ class BaseProductServiceTest {
         var filterProductByUrlDto = FilterProductByUrlDto.builder().composedCatalogKey("local.demo.1").url("https://dummy.local").build();
         var result = productService.searchProductByProductUrl(filterProductByUrlDto);
 
-        assertNotNull(result.block());
+        assertNotNull(result.share().block());
     }
 
     @Test
@@ -132,7 +132,7 @@ class BaseProductServiceTest {
         var productListItemDto = new ProductListItemDto();
         var result = productService.updateProductListItem(productListItemDto);
 
-        assertNotNull(result.block());
-        assertEquals(productListItemDto, result.block());
+        assertNotNull(result.share().block());
+        assertEquals(productListItemDto, result.share().block());
     }
 }

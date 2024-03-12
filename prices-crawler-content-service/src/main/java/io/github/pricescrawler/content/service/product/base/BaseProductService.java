@@ -57,26 +57,27 @@ public abstract class BaseProductService implements ProductService {
      * Performs the logic for searching for items by a given query.
      *
      * @param filterProduct the query to use for the search
-     * @return a CompletableFuture that completes with the {@link SearchProductsDto} object
+     * @return Mono of {@link SearchProductsDto} object
      */
-    protected abstract CompletableFuture<SearchProductsDto> searchItemLogic(FilterProductByQueryDto filterProduct);
+    protected abstract Mono<SearchProductsDto> searchItemLogic(FilterProductByQueryDto filterProduct);
+
 
     /**
      * Performs the logic for searching for an item by its product URL.
      *
      * @param filterProductByUrl the product URL of the item to search for
-     * @return a CompletableFuture that completes with the {@link SearchProductDto} object
+     * @return Mono of {@link SearchProductDto} object
      */
-    protected abstract CompletableFuture<SearchProductDto> searchItemByProductUrlLogic(
+    protected abstract Mono<SearchProductDto> searchItemByProductUrlLogic(
             FilterProductByUrlDto filterProductByUrl);
 
     /**
      * Performs the logic for updating an item.
      *
      * @param productListItem the updated item
-     * @return a CompletableFuture that completes with the updated {@link ProductListItemDto} object
+     * @return Mono of {@link ProductListItemDto} object
      */
-    protected abstract CompletableFuture<ProductListItemDto> updateItemLogic(ProductListItemDto productListItem);
+    protected abstract Mono<ProductListItemDto> updateItemLogic(ProductListItemDto productListItem);
 
     @Override
     public Mono<SearchProductsDto> searchProductByQuery(FilterProductByQueryDto filterProductByQuery) {
@@ -94,20 +95,18 @@ public abstract class BaseProductService implements ProductService {
             return Mono.just(new SearchProductsDto(localeId, composedCatalogKey, cache, generateCatalogData(storeId)));
         }
 
-        var result = searchItemLogic(filterProductByQuery)
-                .thenApply(value -> saveProductsToDatabaseAndCache(value, query, composedCatalogKey, storeId))
-                .exceptionally(t -> {
+        return searchItemLogic(filterProductByQuery)
+                .map(value -> saveProductsToDatabaseAndCache(value, query, composedCatalogKey, storeId))
+                .onErrorResume(t -> {
                             log.error(t.getMessage());
-                            return SearchProductsDto.builder()
+                            return Mono.just(SearchProductsDto.builder()
                                     .locale(localeId)
                                     .catalog(composedCatalogKey)
                                     .products(List.of())
                                     .data(generateCatalogData(storeId))
-                                    .build();
+                                    .build());
                         }
                 );
-
-        return Mono.fromFuture(result);
     }
 
     @Override
@@ -126,15 +125,13 @@ public abstract class BaseProductService implements ProductService {
             return Mono.just(new SearchProductDto(localeId, composedCatalogKey, cache));
         }
 
-        var result = searchItemByProductUrlLogic(filterProductByUrl)
-                .thenApply(value -> saveProductToDatabase(value, null, composedCatalogKey,
+        return searchItemByProductUrlLogic(filterProductByUrl)
+                .map(value -> saveProductToDatabase(value, null, composedCatalogKey,
                         filterProductByUrl.getStoreId()))
-                .exceptionally(t -> {
+                .onErrorResume(t -> {
                     log.error(t.getMessage());
-                    return SearchProductDto.builder().build();
+                    return Mono.just(SearchProductDto.builder().build());
                 });
-
-        return Mono.fromFuture(result);
     }
 
     @Override
@@ -143,13 +140,11 @@ public abstract class BaseProductService implements ProductService {
             return Mono.just(productListItem);
         }
 
-        var result = updateItemLogic(productListItem)
-                .exceptionally(t -> {
+        return updateItemLogic(productListItem)
+                .onErrorResume(t -> {
                     log.error(t.getMessage());
-                    return productListItem;
+                    return Mono.just(productListItem);
                 });
-
-        return Mono.fromFuture(result);
     }
 
     protected Map<String, Object> generateCatalogData(String storeId) {
