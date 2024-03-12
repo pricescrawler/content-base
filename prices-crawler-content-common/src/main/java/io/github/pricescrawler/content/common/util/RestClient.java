@@ -9,7 +9,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
-import java.util.concurrent.CompletableFuture;
 
 @AllArgsConstructor
 public class RestClient<T> {
@@ -17,7 +16,7 @@ public class RestClient<T> {
     private final int timeoutInSec;
     private final int numberOfRetries;
 
-    public CompletableFuture<T> getMonoRequest(String uri, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> typeReference) {
+    public Mono<T> getMonoRequest(String uri, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, ParameterizedTypeReference<T> typeReference) {
         return webClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
@@ -29,11 +28,10 @@ public class RestClient<T> {
                 .onStatus(HttpStatusCode::isError, clientResponse -> Mono.empty())
                 .bodyToMono(typeReference)
                 .timeout(Duration.ofSeconds(timeoutInSec))
-                .retry(numberOfRetries)
-                .toFuture();
+                .retry(numberOfRetries);
     }
 
-    public CompletableFuture<T> postMonoRequest(String uri, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, String body, ParameterizedTypeReference<T> typeReference) {
+    public Mono<T> postMonoRequest(String uri, MultiValueMap<String, String> queryParams, MultiValueMap<String, String> headers, String body, ParameterizedTypeReference<T> typeReference) {
         return webClient
                 .post()
                 .uri(uriBuilder -> uriBuilder
@@ -46,7 +44,6 @@ public class RestClient<T> {
                 .onStatus(HttpStatusCode::isError, clientResponse -> Mono.empty())
                 .bodyToMono(typeReference)
                 .timeout(Duration.ofSeconds(timeoutInSec))
-                .retry(numberOfRetries)
-                .toFuture();
+                .retry(numberOfRetries);
     }
 }

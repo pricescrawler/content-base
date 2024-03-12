@@ -14,7 +14,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ExtendWith(MockitoExtension.class)
 class DemoProductServiceTest {
@@ -36,29 +37,26 @@ class DemoProductServiceTest {
     @Test
     void searchItemLogic() {
         var filterProductByQueryDto = FilterProductByQueryDto.builder().composedCatalogKey("test_catalog").build();
-        var searchProductsDtoFuture = demoProductService.searchItemLogic(filterProductByQueryDto);
+        var searchProductsDtoMono = demoProductService.searchItemLogic(filterProductByQueryDto);
 
-        assertNotNull(searchProductsDtoFuture);
-        assertTrue(searchProductsDtoFuture.isDone());
+        assertNotNull(searchProductsDtoMono);
     }
 
     @Test
     void searchItemByProductUrlLogic() {
         var filterProductByUrlDto = FilterProductByUrlDto.builder().composedCatalogKey("test_catalog")
                 .url("http://test-url").build();
-        var searchProductDtoFuture = demoProductService.searchItemByProductUrlLogic(filterProductByUrlDto);
+        var searchProductDtoMono = demoProductService.searchItemByProductUrlLogic(filterProductByUrlDto);
 
-        assertNotNull(searchProductDtoFuture);
-        assertTrue(searchProductDtoFuture.isDone());
+        assertNotNull(searchProductDtoMono);
     }
 
     @Test
     void updateItemLogic() {
         var productListItemDto = new ProductListItemDto();
-        var productListItemDtoFuture = demoProductService.updateItemLogic(productListItemDto);
+        var productListItemDtoMono = demoProductService.updateItemLogic(productListItemDto);
 
-        assertNotNull(productListItemDtoFuture);
-        assertTrue(productListItemDtoFuture.isDone());
+        assertNotNull(productListItemDtoMono);
     }
 
     @Test

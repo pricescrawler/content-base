@@ -16,9 +16,9 @@ import io.github.pricescrawler.content.service.product.cache.ProductCacheService
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 @Service
 @Profile("demo")
@@ -32,24 +32,24 @@ public class DemoProductService extends BaseProductService {
     }
 
     @Override
-    protected CompletableFuture<SearchProductsDto> searchItemLogic(FilterProductByQueryDto filterProduct) {
+    protected Mono<SearchProductsDto> searchItemLogic(FilterProductByQueryDto filterProduct) {
         var productsResult = parseProductsFromContent(filterProduct.getComposedCatalogKey(), null,
                 DateTimeUtils.getCurrentDateTime());
-        return CompletableFuture.completedFuture(new SearchProductsDto(localeId, filterProduct.getComposedCatalogKey(),
+        return Mono.just(new SearchProductsDto(localeId, filterProduct.getComposedCatalogKey(),
                 productsResult, generateCatalogData(filterProduct.getStoreId())));
     }
 
     @Override
-    protected CompletableFuture<SearchProductDto> searchItemByProductUrlLogic(FilterProductByUrlDto filterProductByUrl) {
+    protected Mono<SearchProductDto> searchItemByProductUrlLogic(FilterProductByUrlDto filterProductByUrl) {
         var demoProduct = parseProductFromContent(filterProductByUrl.getComposedCatalogKey(),
                 filterProductByUrl.getUrl(), null, DateTimeUtils.getCurrentDateTime());
-        return CompletableFuture.completedFuture(new SearchProductDto(localeId,
+        return Mono.just(new SearchProductDto(localeId,
                 filterProductByUrl.getComposedCatalogKey(), demoProduct));
     }
 
     @Override
-    protected CompletableFuture<ProductListItemDto> updateItemLogic(ProductListItemDto productListItem) {
-        return CompletableFuture.completedFuture(productListItem);
+    protected Mono<ProductListItemDto> updateItemLogic(ProductListItemDto productListItem) {
+        return Mono.just(productListItem);
     }
 
     @Override
