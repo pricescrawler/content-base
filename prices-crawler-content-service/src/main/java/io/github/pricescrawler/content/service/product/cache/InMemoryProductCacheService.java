@@ -113,7 +113,7 @@ public class InMemoryProductCacheService implements ProductCacheService {
     @Override
     public void deleteOutdatedProductSearchResults() {
         for (var entry : cachedProducts.entrySet()) {
-            var timezone = catalogService.searchLocaleById(entry.getKey()).orElseThrow().getTimezone();
+            var timezone = catalogService.searchLocaleById(IdUtils.extractLocaleFromKey(entry.getKey())).orElseThrow().getTimezone();
 
             if (!DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), entry.getValue().getDate(), timezone)) {
                 log.info(PRODUCTS_CACHE_REMOVING, entry.getKey());

@@ -116,7 +116,7 @@ public class MongoDbProductCacheService implements ProductCacheService {
     @Override
     public void deleteOutdatedProductSearchResults() {
         for (var entry : productCacheDataRepository.findAll()) {
-            var timezone = catalogService.searchLocaleById(entry.getId()).orElseThrow().getTimezone();
+            var timezone = catalogService.searchLocaleById(IdUtils.extractLocaleFromKey(entry.getId())).orElseThrow().getTimezone();
 
             if (!DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), entry.getDate(), timezone)) {
                 log.info(PRODUCTS_CACHE_REMOVING, entry.getId());
