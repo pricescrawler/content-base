@@ -17,7 +17,7 @@ class DateTimeUtilsTest {
     @Test
     void getDateFromDateTime_shouldReturnDateFromDateTimeString() {
         var dateTime = "2023-06-01T10:15:30Z";
-        assertEquals("2023-06-01", DateTimeUtils.getDateFromDateTime(dateTime));
+        assertEquals("2023-06-01", DateTimeUtils.getDateFromDateTime(dateTime, null));
     }
 
     @Test
