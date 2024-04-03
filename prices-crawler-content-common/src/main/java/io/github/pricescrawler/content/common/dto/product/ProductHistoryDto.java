@@ -31,7 +31,7 @@ public class ProductHistoryDto {
     private List<PriceDto> prices;
     private Map<String, Object> data;
 
-    public ProductHistoryDto(ProductHistoryDao product) {
+    public ProductHistoryDto(ProductHistoryDao product, String timezone) {
         this.locale = product.getLocale();
         this.catalog = product.getCatalog();
         this.reference = product.getReference();
@@ -42,7 +42,7 @@ public class ProductHistoryDto {
         this.productUrl = product.getProductUrl();
         this.imageUrl = product.getImageUrl();
         this.eanUpc = product.getEanUpcList();
-        this.prices = product.getPrices().stream().map(PriceDto::new).toList();
+        this.prices = product.getPrices().stream().map(value -> new PriceDto(value, timezone)).toList();
         this.data = DataMapUtils.getMapPublicKeys(product.getData());
     }
 

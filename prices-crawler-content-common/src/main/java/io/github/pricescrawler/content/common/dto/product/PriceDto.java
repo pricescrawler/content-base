@@ -23,13 +23,13 @@ public class PriceDto {
     private String date;
     private Map<String, Object> data;
 
-    public PriceDto(PriceDao price) {
+    public PriceDto(PriceDao price, String timezone) {
         this.regularPrice = price.getRegularPrice();
         this.campaignPrice = price.getCampaignPrice();
         this.pricePerQuantity = price.getPricePerQuantity();
         this.quantity = price.getQuantity();
         this.name = price.getName();
-        this.date = DateTimeUtils.getDateFromDateTime(price.getDate());
+        this.date = DateTimeUtils.getDateFromDateTime(price.getDate(), timezone);
         this.data = DataMapUtils.getMapPublicKeys(price.getData());
     }
 }
