@@ -19,6 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MongoDbProductCacheService implements ProductCacheService {
     private static final String PRODUCTS_CACHE_REMOVING = "Products Cache: removing {}";
+    private static final String PRODUCTS_CACHE_RETURNING = "Products Cache: returning {}";
 
     private final CatalogService catalogService;
     private final ProductCacheDataRepository productCacheDataRepository;
@@ -48,8 +49,8 @@ public class MongoDbProductCacheService implements ProductCacheService {
                     if (DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), products.getDate(), timezone)) {
                         isCached = true;
                     } else {
-                        productCacheDataRepository.deleteById(key);
                         log.info(PRODUCTS_CACHE_REMOVING, key);
+                        productCacheDataRepository.deleteById(key);
                     }
                 } catch (Exception ex) {
                     log.error("Products Cache: error - {}", ex.getMessage());
@@ -67,7 +68,8 @@ public class MongoDbProductCacheService implements ProductCacheService {
         for (var element : productCacheDataRepository.findAll()) {
             for (var product : element.getProducts()) {
                 if (product.getProductUrl().equals(url)) {
-                    var timezone = catalogService.searchLocaleById(IdUtils.extractLocaleFromKey(product.getId())).orElseThrow().getTimezone();
+                    var timezone = catalogService.searchLocaleById(IdUtils.extractLocaleFromKey(product.getId()))
+                            .orElseThrow().getTimezone();
 
                     if (DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), product.getDate(), timezone)) {
                         return true;
@@ -93,7 +95,7 @@ public class MongoDbProductCacheService implements ProductCacheService {
         if (products.isEmpty()) {
             log.info("Products Cache: returning {} - empty", key);
         } else {
-            log.info("Products Cache: returning {}", key);
+            log.info(PRODUCTS_CACHE_RETURNING, key);
         }
 
         return products;
@@ -104,7 +106,7 @@ public class MongoDbProductCacheService implements ProductCacheService {
         for (var element : productCacheDataRepository.findAll()) {
             for (var product : element.getProducts()) {
                 if (product.getProductUrl().equals(url)) {
-                    log.info("Products Cache: returning {}", url);
+                    log.info(PRODUCTS_CACHE_RETURNING, url);
                     return product;
                 }
             }
@@ -116,11 +118,15 @@ public class MongoDbProductCacheService implements ProductCacheService {
     @Override
     public void deleteOutdatedProductSearchResults() {
         for (var entry : productCacheDataRepository.findAll()) {
-            var timezone = catalogService.searchLocaleById(IdUtils.extractLocaleFromKey(entry.getId())).orElseThrow().getTimezone();
+            try {
+                var timezone = catalogService.searchLocaleById(IdUtils.extractLocaleFromKey(entry.getId())).orElseThrow().getTimezone();
 
-            if (!DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), entry.getDate(), timezone)) {
-                log.info(PRODUCTS_CACHE_REMOVING, entry.getId());
-                productCacheDataRepository.deleteById(entry.getId());
+                if (!DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), entry.getDate(), timezone)) {
+                    log.info(PRODUCTS_CACHE_REMOVING, entry.getId());
+                    productCacheDataRepository.deleteById(entry.getId());
+                }
+            } catch (Exception exception) {
+                log.error("Products Cache: product - {} | error - {}", entry.getId(), exception.getMessage());
             }
         }
     }
