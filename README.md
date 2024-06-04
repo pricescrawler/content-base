@@ -47,8 +47,9 @@ Please report if you find any! 🙂
 | 12 | prices.crawler.controller.product.search.enabled  | Boolean | Product controller           | false       |
 | 13 | prices.crawler.controller.product.parser.enabled  | Boolean | Product controller           | false       |
 | 14 | prices.crawler.background.service.cron            | String  | Cron string                  | 0 0 0 * * * |
-| 15 | prices.crawler.product.data.hintsEnabled          | String  | Product hints enabled        | true        |
-| 16 | prices.crawler.product.data.searchTermsEnabled    | String  | Product search terms enabled | true        |
+| 15 | prices.crawler.background.service.cron.enabled    | Boolean | Cron enabled                 | false       |
+| 16 | prices.crawler.product.data.hintsEnabled          | String  | Product hints enabled        | true        |
+| 17 | prices.crawler.product.data.searchTermsEnabled    | String  | Product search terms enabled | true        |
 
 ### MongoDB Configurations
 
