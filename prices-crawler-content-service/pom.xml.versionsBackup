@@ -1,19 +1,24 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>prices-crawler-content-repository</artifactId>
+    <artifactId>prices-crawler-content-service</artifactId>
     <packaging>jar</packaging>
 
     <parent>
         <groupId>io.github.pricescrawler.content</groupId>
         <artifactId>prices-crawler-content-base</artifactId>
-        <version>0.4.4-SNAPSHOT</version>
+        <version>0.4.3</version>
     </parent>
 
     <dependencies>
         <dependency>
             <groupId>io.github.pricescrawler.content</groupId>
             <artifactId>prices-crawler-content-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.pricescrawler.content</groupId>
+            <artifactId>prices-crawler-content-repository</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
