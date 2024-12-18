@@ -22,7 +22,9 @@ class ProductServiceProviderTest {
     void testServiceRetrievalFromCatalog_notFound() {
         when(mockAppContext.getAutowireCapableBeanFactory()).thenReturn(mockBeanFactory);
 
+        var productServiceProvider = new ProductServiceProvider(mockAppContext);
+
         Assertions.assertThrows(NoSuchBeanDefinitionException.class, () ->
-                new ProductServiceProvider(mockAppContext).getServiceFromCatalog("local.catalog"));
+                productServiceProvider.getServiceFromCatalog("local.catalog"));
     }
 }
