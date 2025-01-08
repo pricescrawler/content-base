@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 class IdUtilsTest {
-
     @Test
     void parse_shouldReturnParsedStringWithLocaleAndCatalog() {
         var locale = "local";
