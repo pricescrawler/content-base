@@ -11,8 +11,14 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
+
+    services:
+      docker:
+        image: docker:latest
+        options: --privileged
+        ports:
+          - 2375:2375
 
     steps:
       - uses: actions/checkout@v3

@@ -15,19 +15,13 @@ import io.github.pricescrawler.content.repository.product.list.ProductListDataRe
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.data.mongodb.core.MongoTemplate;
 
 import java.util.List;
 
-@AutoConfigureDataMongo
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"ACTIVE_PROFILE=demo"})
-public abstract class BaseSpringBootTest {
-    @Autowired
-    protected MongoTemplate mongoTemplate;
-
+public abstract class BaseSpringBootTest extends MongoContainerTest {
     @Autowired
     protected TestRestTemplate restTemplate;
 

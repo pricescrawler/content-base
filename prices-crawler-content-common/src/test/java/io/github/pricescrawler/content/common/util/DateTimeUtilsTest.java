@@ -8,7 +8,6 @@ import java.time.ZonedDateTime;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DateTimeUtilsTest {
-
     @Test
     void getCurrentDateTime_shouldReturnCurrentDateTimeInUTC() {
         assertNotNull(DateTimeUtils.getCurrentDateTime());

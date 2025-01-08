@@ -11,7 +11,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ProductControllerTest extends BaseSpringBootTest {
-
     @Test
     void shouldIngestProductsSuccessfully() {
         var body = List.of(ProductDto.builder().build());

@@ -27,10 +27,13 @@ import static org.mockito.Mockito.*;
 class SimpleCatalogServiceTest {
     @InjectMocks
     private SimpleCatalogService simpleCatalogService;
+
     @Mock
     private LocaleDataRepository localeDataRepository;
+
     @Mock
     private CatalogDataRepository catalogDataRepository;
+
     @Mock
     private CategoryDataRepository categoryDataRepository;
 

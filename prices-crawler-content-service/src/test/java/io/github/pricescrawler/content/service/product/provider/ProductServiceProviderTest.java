@@ -15,6 +15,7 @@ import static org.mockito.Mockito.when;
 class ProductServiceProviderTest {
     @Mock
     private ApplicationContext mockAppContext;
+
     @Mock
     private AutowireCapableBeanFactory mockBeanFactory;
 
