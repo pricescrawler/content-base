@@ -4,7 +4,7 @@ COPY ./ ./
 RUN mvn clean package \
 && java -Djarmode=layertools -jar prices-crawler-content-application/target/*.jar extract
 
-FROM amazoncorretto:21
+FROM amazoncorretto:24
 LABEL PROJECT_NAME=prices-crawler-content-api
 WORKDIR /application
 COPY --from=builder application/dependencies/ ./
