@@ -31,7 +31,7 @@ public class SimpleProductDataService implements ProductDataService {
                                 .reference(value.getReference())
                                 .name(value.getName())
                                 .regularPrice(value.getRegularPrice())
-                                .campaignPrice(value.getRegularPrice())
+                                .campaignPrice(value.getCampaignPrice())
                                 .pricePerQuantity(value.getPricePerQuantity())
                                 .quantity(value.getQuantity())
                                 .brand(value.getBrand())
