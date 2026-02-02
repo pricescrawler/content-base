@@ -26,5 +26,6 @@ public class ProductDto {
     private String imageUrl;
     private List<String> eanUpcList;
     private String date;
+    private Boolean inStock;
     private Map<String, Object> data;
 }

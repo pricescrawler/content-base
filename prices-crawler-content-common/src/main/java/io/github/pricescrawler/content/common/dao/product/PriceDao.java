@@ -19,6 +19,7 @@ public class PriceDao {
     private String quantity;
     private String name;
     private String date;
+    private Boolean inStock;
     private Map<String, Object> data;
 
     public PriceDao(ProductDto product) {
@@ -28,6 +29,7 @@ public class PriceDao {
         this.quantity = product.getQuantity();
         this.name = product.getName();
         this.date = product.getDate();
+        this.inStock = product.getInStock();
         this.data = product.getData();
     }
 }

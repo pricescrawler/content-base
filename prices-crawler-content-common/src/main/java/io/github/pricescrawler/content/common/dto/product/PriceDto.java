@@ -21,6 +21,7 @@ public class PriceDto {
     private String quantity;
     private String name;
     private String date;
+    private Boolean inStock;
     private Map<String, Object> data;
 
     public PriceDto(PriceDao price, String timezone) {
@@ -30,6 +31,7 @@ public class PriceDto {
         this.quantity = price.getQuantity();
         this.name = price.getName();
         this.date = DateTimeUtils.getDateFromDateTime(price.getDate(), timezone);
+        this.inStock = price.getInStock();
         this.data = DataMapUtils.getMapPublicKeys(price.getData());
     }
 }
