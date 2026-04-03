@@ -5,6 +5,7 @@ import io.github.pricescrawler.content.repository.product.ProductDataService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ public class ProductController {
     private final ProductDataService productDataService;
 
     @PostMapping
-    public void ingestProduct(@RequestBody List<ProductDto> productDtoList) {
-        productDataService.save(productDtoList);
+    public Mono<Void> ingestProduct(@RequestBody List<ProductDto> productDtoList) {
+        return productDataService.save(productDtoList);
     }
 }

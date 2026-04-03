@@ -15,10 +15,10 @@ import io.github.pricescrawler.content.service.product.ProductService;
 import io.github.pricescrawler.content.service.product.cache.ProductCacheService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 @Log4j2
 public abstract class BaseProductService implements ProductService {
@@ -49,8 +49,8 @@ public abstract class BaseProductService implements ProductService {
         this.productCacheService = productCacheService;
         this.productDataService = productDataService;
         this.productHistoryDataService = productHistoryDataService;
-        this.optionalLocale = catalogDataService.findLocaleById(localeId);
-        this.optionalCatalog = catalogDataService.findCatalogByIdAndLocaleId(catalogId, localeId);
+        this.optionalLocale = catalogDataService.findLocaleById(localeId).blockOptional();
+        this.optionalCatalog = catalogDataService.findCatalogByIdAndLocaleId(catalogId, localeId).blockOptional();
     }
 
     /**
@@ -60,7 +60,6 @@ public abstract class BaseProductService implements ProductService {
      * @return Mono of {@link SearchProductsDto} object
      */
     protected abstract Mono<SearchProductsDto> searchItemLogic(FilterProductByQueryDto filterProduct);
-
 
     /**
      * Performs the logic for searching for an item by its product URL.
@@ -90,23 +89,25 @@ public abstract class BaseProductService implements ProductService {
                     generateCatalogData(storeId)));
         }
 
-        if (productCacheService.isProductSearchResultCached(localeId, composedCatalogKey, query)) {
-            var cache = productCacheService.retrieveProductSearchResult(localeId, composedCatalogKey, query);
-            return Mono.just(new SearchProductsDto(localeId, composedCatalogKey, cache, generateCatalogData(storeId)));
-        }
-
-        return searchItemLogic(filterProductByQuery)
-                .map(value -> saveProductsToDatabaseAndCache(value, query, composedCatalogKey, storeId))
-                .onErrorResume(t -> {
-                            log.error(t.getMessage());
-                            return Mono.just(SearchProductsDto.builder()
-                                    .locale(localeId)
-                                    .catalog(composedCatalogKey)
-                                    .products(List.of())
-                                    .data(generateCatalogData(storeId))
-                                    .build());
-                        }
-                );
+        return productCacheService.isProductSearchResultCached(localeId, composedCatalogKey, query)
+                .flatMap(cached -> {
+                    if (cached) {
+                        return productCacheService.retrieveProductSearchResult(localeId, composedCatalogKey, query)
+                                .map(cacheResult -> new SearchProductsDto(localeId, composedCatalogKey, cacheResult,
+                                        generateCatalogData(storeId)));
+                    }
+                    return searchItemLogic(filterProductByQuery)
+                            .flatMap(value -> saveProductsToDatabaseAndCache(value, query, composedCatalogKey, storeId))
+                            .onErrorResume(t -> {
+                                log.error(t.getMessage());
+                                return Mono.just(SearchProductsDto.builder()
+                                        .locale(localeId)
+                                        .catalog(composedCatalogKey)
+                                        .products(List.of())
+                                        .data(generateCatalogData(storeId))
+                                        .build());
+                            });
+                });
     }
 
     @Override
@@ -120,17 +121,18 @@ public abstract class BaseProductService implements ProductService {
             return Mono.just(new SearchProductDto(localeId, composedCatalogKey, null));
         }
 
-        if (productCacheService.isProductSearchResultByUrl(productUrl)) {
-            var cache = productCacheService.retrieveProductSearchResultByUrl(productUrl);
-            return Mono.just(new SearchProductDto(localeId, composedCatalogKey, cache));
-        }
-
-        return searchItemByProductUrlLogic(filterProductByUrl)
-                .map(value -> saveProductToDatabase(value, null, composedCatalogKey,
-                        filterProductByUrl.getStoreId()))
-                .onErrorResume(t -> {
-                    log.error(t.getMessage());
-                    return Mono.just(SearchProductDto.builder().build());
+        return productCacheService.isProductSearchResultByUrl(productUrl)
+                .flatMap(cached -> {
+                    if (cached) {
+                        return productCacheService.retrieveProductSearchResultByUrl(productUrl)
+                                .map(cacheResult -> new SearchProductDto(localeId, composedCatalogKey, cacheResult));
+                    }
+                    return searchItemByProductUrlLogic(filterProductByUrl)
+                            .flatMap(value -> saveProductToDatabase(value, null, composedCatalogKey, storeId))
+                            .onErrorResume(t -> {
+                                log.error(t.getMessage());
+                                return Mono.just(SearchProductDto.builder().build());
+                            });
                 });
     }
 
@@ -157,39 +159,42 @@ public abstract class BaseProductService implements ProductService {
         return displayOptions;
     }
 
-    private SearchProductDto saveProductToDatabase(SearchProductDto searchProductDto, String query,
-                                                   String composedCatalogKey, String storeId) {
+    private Mono<SearchProductDto> saveProductToDatabase(SearchProductDto searchProductDto, String query,
+                                                         String composedCatalogKey, String storeId) {
         if (isHistoryEnabled && isLocaleOrCatalogOrStoreHistoryEnabled(storeId)) {
-
             if (isAggregatedHistoryEnabled) {
                 var searchResultDto = new SearchProductsDto(localeId, composedCatalogKey,
                         List.of(searchProductDto.getProduct()), generateCatalogData(storeId));
-                CompletableFuture.runAsync(() -> productHistoryDataService.saveSearchResult(searchResultDto, query));
+                productHistoryDataService.saveSearchResult(searchResultDto, query)
+                        .subscribe(null, t -> log.error("Error saving product history: {}", t.getMessage()));
             }
 
             if (isIndividualHistoryEnabled) {
-                CompletableFuture.runAsync(() -> productDataService.save(List.of(searchProductDto.getProduct())));
+                productDataService.save(List.of(searchProductDto.getProduct()))
+                        .subscribe(null, t -> log.error("Error saving product data: {}", t.getMessage()));
             }
         }
 
-        return searchProductDto;
+        return Mono.just(searchProductDto);
     }
 
-    private SearchProductsDto saveProductsToDatabaseAndCache(SearchProductsDto searchProductsDto, String query,
-                                                             String composedCatalogKey, String storeId) {
+    private Mono<SearchProductsDto> saveProductsToDatabaseAndCache(SearchProductsDto searchProductsDto, String query,
+                                                                   String composedCatalogKey, String storeId) {
         if (isHistoryEnabled && isLocaleOrCatalogOrStoreHistoryEnabled(storeId)) {
-            searchProductsDto.getProducts().stream()
-                    .map(product -> new SearchProductDto(searchProductsDto.getLocale(), searchProductsDto.getCatalog(),
-                            product))
-                    .forEach(value -> saveProductToDatabase(value, query, composedCatalogKey, storeId));
+            Flux.fromIterable(searchProductsDto.getProducts())
+                    .map(product -> new SearchProductDto(searchProductsDto.getLocale(),
+                            searchProductsDto.getCatalog(), product))
+                    .flatMap(value -> saveProductToDatabase(value, query, composedCatalogKey, storeId))
+                    .subscribe(null, t -> log.error("Error saving products: {}", t.getMessage()));
         }
 
         if (isCacheEnabled && isLocaleOrCatalogOrStoreCacheEnabled(storeId)) {
-            CompletableFuture.runAsync(() -> productCacheService.cacheProductSearchResult(localeId, composedCatalogKey,
-                    query, searchProductsDto.getProducts()));
+            productCacheService.cacheProductSearchResult(localeId, composedCatalogKey, query,
+                            searchProductsDto.getProducts())
+                    .subscribe(null, t -> log.error("Error caching product search result: {}", t.getMessage()));
         }
 
-        return searchProductsDto;
+        return Mono.just(searchProductsDto);
     }
 
     private boolean isLocaleOrCatalogOrStoreHistoryEnabled(String storeId) {

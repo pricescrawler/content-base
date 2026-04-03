@@ -14,11 +14,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -42,11 +42,11 @@ class SimpleCatalogServiceTest {
         var locale1 = LocaleDao.builder().id("1").build();
         var locale2 = LocaleDao.builder().id("2").build();
 
-        var locales = Arrays.asList(new LocaleDto(locale1), new LocaleDto(locale2));
-        when(localeDataRepository.findAll()).thenReturn(List.of(locale1, locale2));
-        when(catalogDataRepository.findAllByLocalesContains(anyString())).thenReturn(List.of());
+        var locales = List.of(new LocaleDto(locale1), new LocaleDto(locale2));
+        when(localeDataRepository.findAll()).thenReturn(Flux.just(locale1, locale2));
+        when(catalogDataRepository.findAllByLocalesContains(anyString())).thenReturn(Flux.empty());
 
-        var result = simpleCatalogService.searchLocales();
+        var result = simpleCatalogService.searchLocales().collectList().block();
 
         verify(localeDataRepository, times(1)).findAll();
         assertEquals(locales.size(), result.size());
@@ -58,13 +58,13 @@ class SimpleCatalogServiceTest {
         var localeDao = LocaleDao.builder().id(id).build();
         var localeDto = LocaleDto.builder().id(id).isActive(true).categories(List.of()).data(Map.of()).build();
 
-        when(localeDataRepository.findById(id)).thenReturn(Optional.of(localeDao));
-        when(catalogDataRepository.findAllByLocalesContains(anyString())).thenReturn(List.of());
+        when(localeDataRepository.findById(id)).thenReturn(Mono.just(localeDao));
+        when(catalogDataRepository.findAllByLocalesContains(anyString())).thenReturn(Flux.empty());
 
-        var result = simpleCatalogService.searchLocaleById(id);
+        var result = simpleCatalogService.searchLocaleById(id).block();
 
         verify(localeDataRepository, times(1)).findById(id);
-        assertEquals(Optional.of(localeDto), result);
+        assertEquals(localeDto, result);
     }
 
     @Test
@@ -75,13 +75,13 @@ class SimpleCatalogServiceTest {
         var catalogDao = CatalogDao.builder().categories(List.of(categoryId)).build();
         var categoryDao = CategoryDao.builder().name(categoryId).build();
 
-        when(localeDataRepository.findById(localeId)).thenReturn(Optional.of(localeDao));
-        when(categoryDataRepository.findById(categoryId)).thenReturn(Optional.of(categoryDao));
-        when(catalogDataRepository.findAllByLocalesContains(anyString())).thenReturn(List.of(catalogDao));
+        when(localeDataRepository.findById(localeId)).thenReturn(Mono.just(localeDao));
+        when(categoryDataRepository.findById(categoryId)).thenReturn(Mono.just(categoryDao));
+        when(catalogDataRepository.findAllByLocalesContains(anyString())).thenReturn(Flux.just(catalogDao));
         when(catalogDataRepository.findAllByLocalesContainsAndCategoriesContains(anyString(), anyString()))
-                .thenReturn(List.of(catalogDao));
+                .thenReturn(Flux.just(catalogDao));
 
-        var result = simpleCatalogService.searchLocaleById(localeId);
+        var result = simpleCatalogService.searchLocaleById(localeId).block();
 
         verify(localeDataRepository, times(1)).findById(localeId);
 
@@ -89,6 +89,6 @@ class SimpleCatalogServiceTest {
         var categoryDto = CategoryDto.builder().name(categoryId).isActive(true).catalogs(List.of(catalogDto)).data(Map.of()).build();
         var localeDto = LocaleDto.builder().id(localeId).isActive(true).categories(List.of(categoryDto)).data(Map.of()).build();
 
-        assertEquals(Optional.of(localeDto), result);
+        assertEquals(localeDto, result);
     }
 }

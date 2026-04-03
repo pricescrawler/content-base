@@ -6,7 +6,7 @@ import io.github.pricescrawler.content.common.util.IdUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
@@ -15,12 +15,12 @@ public class SimpleCatalogDataService implements CatalogDataService {
     private final CatalogDataRepository catalogDataRepository;
 
     @Override
-    public Optional<LocaleDao> findLocaleById(String id) {
+    public Mono<LocaleDao> findLocaleById(String id) {
         return localeDataRepository.findById(id);
     }
 
     @Override
-    public Optional<CatalogDao> findCatalogByIdAndLocaleId(String id, String localeId) {
+    public Mono<CatalogDao> findCatalogByIdAndLocaleId(String id, String localeId) {
         return catalogDataRepository.findById(IdUtils.parse(localeId, id));
     }
 }

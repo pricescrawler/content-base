@@ -7,8 +7,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.List;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @CrossOrigin
 @RestController
@@ -19,13 +19,14 @@ public class CatalogController {
     private final CatalogService catalogService;
 
     @GetMapping
-    public List<LocaleDto> getLocales() {
+    public Flux<LocaleDto> getLocales() {
         return catalogService.searchLocales();
     }
 
     @GetMapping("/{locale}")
-    public LocaleDto getLocale(@PathVariable String locale) {
+    public Mono<LocaleDto> getLocale(@PathVariable String locale) {
         return catalogService.searchLocaleById(locale)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("%s locale not found", locale)));
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        String.format("%s locale not found", locale))));
     }
 }

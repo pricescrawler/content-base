@@ -1,40 +1,44 @@
 package io.github.pricescrawler.content.controller.product;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.github.pricescrawler.content.common.dto.product.parser.ProductContentDto;
 import io.github.pricescrawler.content.util.BaseSpringBootTest;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.springframework.http.MediaType;
 
 class ProductContentParserControllerTest extends BaseSpringBootTest {
     @Test
     void shouldParseSingleProductFromContentSuccessfully() {
-        var body = ProductContentDto.builder().catalog("local.demo").build();
-        var entity = restTemplate.postForEntity("/api/v1/products/parser", body, JsonNode.class);
-        assertEquals(HttpStatus.OK, entity.getStatusCode());
+        webTestClient.post().uri("/api/v1/products/parser")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(ProductContentDto.builder().catalog("local.demo").build())
+                .exchange()
+                .expectStatus().isOk();
     }
 
     @Test
     void shouldParseProductListFromContentSuccessfully() {
-        var body = ProductContentDto.builder().catalog("local.demo").build();
-        var entity = restTemplate.postForEntity("/api/v1/products/parser/list", body, JsonNode.class);
-        assertEquals(HttpStatus.OK, entity.getStatusCode());
+        webTestClient.post().uri("/api/v1/products/parser/list")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(ProductContentDto.builder().catalog("local.demo").build())
+                .exchange()
+                .expectStatus().isOk();
     }
 
     @Test
     void shouldReturnNotFoundForInvalidSingleProductCatalog() {
-        var body = ProductContentDto.builder().catalog("dummy.dummy").build();
-        var entity = restTemplate.postForEntity("/api/v1/products/parser", body, JsonNode.class);
-        assertEquals(HttpStatus.NOT_FOUND, entity.getStatusCode());
+        webTestClient.post().uri("/api/v1/products/parser")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(ProductContentDto.builder().catalog("dummy.dummy").build())
+                .exchange()
+                .expectStatus().isNotFound();
     }
 
     @Test
     void shouldReturnNotFoundForInvalidProductListCatalog() {
-        var body = ProductContentDto.builder().catalog("dummy.dummy").build();
-        var entity = restTemplate.postForEntity("/api/v1/products/parser/list", body, JsonNode.class);
-        assertEquals(HttpStatus.NOT_FOUND, entity.getStatusCode());
+        webTestClient.post().uri("/api/v1/products/parser/list")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(ProductContentDto.builder().catalog("dummy.dummy").build())
+                .exchange()
+                .expectStatus().isNotFound();
     }
 }
-

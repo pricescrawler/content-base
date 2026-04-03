@@ -14,10 +14,11 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 @Log4j2
 @Service
@@ -32,43 +33,42 @@ public class SimpleProductHistoryDataService implements ProductHistoryDataServic
     private boolean isProductIncidentEnabled;
 
     @Override
-    public Optional<ProductHistoryDao> findProduct(String locale, String catalog, String reference) {
+    public Mono<ProductHistoryDao> findProduct(String locale, String catalog, String reference) {
         return productHistoryDataRepository.findById(IdUtils.parse(locale, catalog, reference));
     }
 
     @Override
-    public List<ProductHistoryDao> findProductsByEanUpc(String eanUpc) {
+    public Flux<ProductHistoryDao> findProductsByEanUpc(String eanUpc) {
         return productHistoryDataRepository.findAllByEanUpcList(eanUpc);
     }
 
     @Override
-    public void saveSearchResult(SearchProductsDto searchProducts, String query) {
-        for (var productDto : searchProducts.getProducts()) {
-            var optionalProduct = productHistoryDataRepository.findById(IdUtils.parse(searchProducts.getLocale(), searchProducts.getCatalog(), productDto.getReference()));
-
-            if (optionalProduct.isPresent()) {
-                var productData = optionalProduct.get();
-
-                if (isProductDataEquals(productData, productDto)) {
-                    saveProduct(updatedProductData(productData, productDto, query));
-                } else {
-                    CompletableFuture.runAsync(() -> productIncidentDataService.saveIncident(productData, productDto, query));
-                }
-            } else {
-                createProductData(searchProducts.getLocale(), searchProducts.getCatalog(), productDto, query);
-            }
-        }
+    public Mono<Void> saveSearchResult(SearchProductsDto searchProducts, String query) {
+        return Flux.fromIterable(searchProducts.getProducts())
+                .flatMap(productDto -> {
+                    var id = IdUtils.parse(searchProducts.getLocale(), searchProducts.getCatalog(), productDto.getReference());
+                    return productHistoryDataRepository.findById(id)
+                            .flatMap(productData -> {
+                                if (isProductDataEquals(productData, productDto)) {
+                                    return updatedProductData(productData, productDto, query)
+                                            .flatMap(this::saveProduct);
+                                } else {
+                                    return productIncidentDataService.saveIncident(productData, productDto, query);
+                                }
+                            })
+                            .switchIfEmpty(createProductData(searchProducts.getLocale(), searchProducts.getCatalog(), productDto, query));
+                })
+                .then();
     }
 
-    public void saveProduct(ProductHistoryDao product) {
-        var isValid = !product.getName().isBlank();
-
-        if (isValid) {
-            productHistoryDataRepository.save(product);
+    public Mono<Void> saveProduct(ProductHistoryDao product) {
+        if (product.getName().isBlank()) {
+            return Mono.empty();
         }
+        return productHistoryDataRepository.save(product).then();
     }
 
-    private void createProductData(String locale, String catalog, ProductDto product, String query) {
+    private Mono<Void> createProductData(String locale, String catalog, ProductDto product, String query) {
         var productData = new ProductHistoryDao(locale, catalog, product);
         productData.setPrices(List.of(new PriceDao(product)));
 
@@ -76,29 +76,33 @@ public class SimpleProductHistoryDataService implements ProductHistoryDataServic
             productData.setSearchTerms(ProductUtils.parseSearchTerms(null, query));
         }
 
-        saveProduct(productData);
+        return saveProduct(productData);
     }
 
-    private ProductHistoryDao updatedProductData(ProductHistoryDao product, ProductDto lastProduct, String query) {
-        var timezone = catalogDataService.findLocaleById(product.getLocale()).orElseThrow().getTimezone();
+    private Mono<ProductHistoryDao> updatedProductData(ProductHistoryDao product, ProductDto lastProduct, String query) {
+        return catalogDataService.findLocaleById(product.getLocale())
+                .map(locale -> {
+                    product.setPrices(ProductUtils.parsePricesHistory(product.getPrices(), new PriceDao(lastProduct), locale.getTimezone()));
+                    product.setEanUpcList(ProductUtils.parseEanUpcList(product.getEanUpcList(), lastProduct.getEanUpcList()));
 
-        product.setPrices(ProductUtils.parsePricesHistory(product.getPrices(), new PriceDao(lastProduct), timezone));
-        product.setEanUpcList(ProductUtils.parseEanUpcList(product.getEanUpcList(), lastProduct.getEanUpcList()));
+                    if (productDataConfig.isHintsEnabled()) {
+                        product.incrementHits();
+                    }
 
-        if (productDataConfig.isHintsEnabled()) {
-            product.incrementHits();
-        }
+                    if (productDataConfig.isSearchTermsEnabled()) {
+                        product.setSearchTerms(ProductUtils.parseSearchTerms(product.getSearchTerms(), query));
+                    }
 
-        if (productDataConfig.isSearchTermsEnabled()) {
-            product.setSearchTerms(ProductUtils.parseSearchTerms(product.getSearchTerms(), query));
-        }
-
-        return product;
+                    return product;
+                });
     }
 
     private boolean isProductDataEquals(ProductHistoryDao product, ProductDto lastProduct) {
-        return isProductIncidentEnabled &&
-                (product.getName() == null || product.getName().equalsIgnoreCase(lastProduct.getName())) &&
+        if (!isProductIncidentEnabled) {
+            return true;
+        }
+
+        return (product.getName() == null || product.getName().equalsIgnoreCase(lastProduct.getName())) &&
                 (product.getBrand() == null || product.getBrand().equalsIgnoreCase(lastProduct.getBrand())) &&
                 (product.getProductUrl() == null || product.getProductUrl().equalsIgnoreCase(lastProduct.getProductUrl())) &&
                 (product.getDescription() == null || product.getDescription().equalsIgnoreCase(lastProduct.getDescription())) &&

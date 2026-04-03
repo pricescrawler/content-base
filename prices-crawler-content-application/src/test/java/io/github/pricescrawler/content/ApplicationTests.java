@@ -1,31 +1,40 @@
 package io.github.pricescrawler.content;
 
 import io.github.pricescrawler.content.util.MongoContainerTest;
-import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.http.HttpStatus;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
+import org.springframework.test.web.reactive.server.WebTestClient;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"ACTIVE_PROFILE=demo"})
 class ApplicationTests extends MongoContainerTest {
     @Autowired
-    protected MongoTemplate mongoTemplate;
-    @Autowired
-    private TestRestTemplate restTemplate;
+    protected ReactiveMongoTemplate mongoTemplate;
+    @LocalServerPort
+    private int port;
+    private WebTestClient webTestClient;
+
+    @BeforeEach
+    void setUp() {
+        webTestClient = WebTestClient.bindToServer()
+                .baseUrl("http://localhost:" + port)
+                .build();
+    }
 
     @Test
     void sanityTest() {
-        var entity = restTemplate.getForEntity("/actuator/health", String.class);
-        assertEquals(HttpStatus.OK, entity.getStatusCode());
+        webTestClient.get().uri("/actuator/health")
+                .exchange()
+                .expectStatus().isOk();
     }
 
     @Test
     void inMemoryMongoDbTest() {
-        Assertions.assertThat(mongoTemplate.getDb()).isNotNull();
+        assertThat(mongoTemplate.getMongoDatabase().block()).isNotNull();
     }
 }

@@ -23,31 +23,29 @@ public class ProductUtils {
         }
 
         var uniqueEanUpcSet = new HashSet<>(storedEanUpcList);
-
-        for (String eanUpc : eanUpcList) {
-            if (!storedEanUpcList.contains(eanUpc)) {
-                uniqueEanUpcSet.add(eanUpc);
-            }
-        }
-
+        uniqueEanUpcSet.addAll(eanUpcList);
         return uniqueEanUpcSet.stream().toList();
     }
 
     public static List<PriceDao> parsePricesHistory(List<PriceDao> storedPrices, PriceDao priceDao, String timezone) {
         try {
             if (storedPrices == null) {
-                return List.of(priceDao);
+                return new ArrayList<>(List.of(priceDao));
             }
 
-            if (!storedPrices.isEmpty()) {
-                var lastStoredPrice = storedPrices.getLast();
+            var mutablePrices = new ArrayList<>(storedPrices);
+
+            if (!mutablePrices.isEmpty()) {
+                var lastStoredPrice = mutablePrices.getLast();
 
                 if (!DateTimeUtils.areDatesOnSameDay(lastStoredPrice.getDate(), priceDao.getDate(), timezone)) {
-                    storedPrices.add(priceDao);
+                    mutablePrices.add(priceDao);
                 }
             } else {
-                storedPrices.add(priceDao);
+                mutablePrices.add(priceDao);
             }
+
+            return mutablePrices;
         } catch (Exception exception) {
             log.error("PricesHistory parser exception: {}", exception.getMessage());
         }

@@ -15,15 +15,17 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class BaseProductServiceTest {
     @Mock
     private CatalogDataService catalogDataService;
@@ -41,6 +43,13 @@ class BaseProductServiceTest {
 
     @BeforeEach
     void setUp() {
+        when(catalogDataService.findLocaleById(anyString())).thenReturn(Mono.empty());
+        when(catalogDataService.findCatalogByIdAndLocaleId(anyString(), anyString())).thenReturn(Mono.empty());
+        when(productCacheService.isProductSearchResultCached(any(), any(), any())).thenReturn(Mono.just(false));
+        when(productCacheService.isProductSearchResultByUrl(any())).thenReturn(Mono.just(false));
+        when(productCacheService.retrieveProductSearchResult(any(), any(), any())).thenReturn(Mono.just(List.of()));
+        when(productCacheService.retrieveProductSearchResultByUrl(any())).thenReturn(Mono.just(ProductDto.builder().build()));
+
         productService = new BaseProductService("local", "demo",
                 catalogDataService, productDataService, productCacheService, productHistoryDataService) {
             @Override
@@ -80,7 +89,8 @@ class BaseProductServiceTest {
 
     @Test
     void searchProductByQuery_cacheEnabled() {
-        when(productCacheService.isProductSearchResultCached(anyString(), anyString(), anyString())).thenReturn(true);
+        when(productCacheService.isProductSearchResultCached(anyString(), anyString(), anyString()))
+                .thenReturn(Mono.just(true));
 
         var filterProductByQueryDto = FilterProductByQueryDto.builder().composedCatalogKey("local.demo.1").query("dummy").build();
         var result = productService.searchProductByQuery(filterProductByQueryDto);
@@ -91,7 +101,8 @@ class BaseProductServiceTest {
 
     @Test
     void searchProductByQuery_historyEnabled() {
-        when(productCacheService.isProductSearchResultCached(anyString(), anyString(), anyString())).thenReturn(false);
+        when(productCacheService.isProductSearchResultCached(anyString(), anyString(), anyString()))
+                .thenReturn(Mono.just(false));
 
         var filterProductByQueryDto = FilterProductByQueryDto.builder().composedCatalogKey("local.demo.1").query("dummy").build();
         var result = productService.searchProductByQuery(filterProductByQueryDto);
@@ -110,13 +121,13 @@ class BaseProductServiceTest {
 
     @Test
     void searchProductByProductUrl_cacheEnabled() {
-        when(productCacheService.isProductSearchResultByUrl(anyString())).thenReturn(true);
+        when(productCacheService.isProductSearchResultByUrl(anyString())).thenReturn(Mono.just(true));
 
         var filterProductByUrlDto = FilterProductByUrlDto.builder().composedCatalogKey("local.demo.1").url("https://dummy.local").build();
         var result = productService.searchProductByProductUrl(filterProductByUrlDto);
 
         assertNotNull(result.share().block());
-        assertNull(result.share().block().getProduct());
+        assertNotNull(result.share().block().getProduct());
     }
 
     @Test

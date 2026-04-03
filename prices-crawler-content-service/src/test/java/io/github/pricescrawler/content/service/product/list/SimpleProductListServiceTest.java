@@ -8,10 +8,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -30,15 +31,16 @@ class SimpleProductListServiceTest {
         var date = "2024-02-19";
         var productListItems = List.of(new ProductListItemDto());
 
-        when(productListDataService.findProductListById(id)).thenReturn(Optional.of(new ProductListDao(productListItems, date)));
+        when(productListDataService.findProductListById(id)).thenReturn(Mono.just(new ProductListDao(productListItems, date)));
 
-        var retrievedList = productListService.retrieveProductList(id);
+        var retrievedList = productListService.retrieveProductList(id).block();
         assertEquals(productListItems.size(), retrievedList.size());
     }
 
     @Test
     void retrieveProductList_empty() {
-        var retrievedList = productListService.retrieveProductList("dummy");
+        when(productListDataService.findProductListById("dummy")).thenReturn(Mono.empty());
+        var retrievedList = productListService.retrieveProductList("dummy").block();
         assertTrue(retrievedList.isEmpty());
     }
 
@@ -47,9 +49,10 @@ class SimpleProductListServiceTest {
         var productListItems = List.of(new ProductListItemDto());
         var date = "2024-02-19";
 
-        when(productListDataService.saveProductList(any(ProductListDao.class))).thenReturn(new ProductListDao(productListItems, date));
+        when(productListDataService.saveProductList(any(ProductListDao.class)))
+                .thenReturn(Mono.just(new ProductListDao(productListItems, date)));
 
-        var productListShareDto = productListService.storeProductList(productListItems);
+        var productListShareDto = productListService.storeProductList(productListItems).block();
         assertNull(productListShareDto.getId());
         assertNotNull(productListShareDto.getExpirationDate());
     }
@@ -59,11 +62,11 @@ class SimpleProductListServiceTest {
         var date = "2024-01-01T00:00:00.000000000Z";
         var productListDao1 = new ProductListDao(List.of(), date);
         var productListDao2 = new ProductListDao(new ArrayList<>(), date);
-        var productListDaoList = List.of(productListDao1, productListDao2);
 
-        when(productListDataService.findAllProductList()).thenReturn(productListDaoList);
+        when(productListDataService.findAllProductList()).thenReturn(Flux.just(productListDao1, productListDao2));
+        when(productListDataService.deleteProductList(any())).thenReturn(Mono.empty());
 
-        productListService.deleteOutdatedProductLists();
+        productListService.deleteOutdatedProductLists().block();
         verify(productListDataService, times(2)).deleteProductList(null);
     }
 }

@@ -2,6 +2,7 @@ package io.github.pricescrawler.content.common.util;
 
 import lombok.AllArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -23,7 +24,7 @@ public class RestClient<T> {
                         .path(uri)
                         .queryParams(queryParams)
                         .build())
-                .headers(httpHeaders -> httpHeaders.addAll(headers))
+                .headers(httpHeaders -> httpHeaders.addAll(new HttpHeaders(headers)))
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, clientResponse -> Mono.empty())
                 .bodyToMono(typeReference)
@@ -38,7 +39,7 @@ public class RestClient<T> {
                         .path(uri)
                         .queryParams(queryParams)
                         .build())
-                .headers(httpHeaders -> httpHeaders.addAll(headers))
+                .headers(httpHeaders -> httpHeaders.addAll(new HttpHeaders(headers)))
                 .body(BodyInserters.fromValue(body))
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, clientResponse -> Mono.empty())

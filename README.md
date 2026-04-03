@@ -33,8 +33,8 @@ Please report if you find any! 🙂
 
 | #  | Name                                              | Type    | Description                  | Default     |
 |----|---------------------------------------------------|---------|------------------------------|-------------|
-| 1  | spring.data.mongodb.uri                           | String  | Mongodb URI                  | -           |
-| 2  | spring.data.mongodb.database                      | String  | Mongodb database name        | -           |
+| 1  | spring.mongodb.uri                                | String  | Mongodb URI                  | -           |
+| 2  | spring.mongodb.database                           | String  | Mongodb database name        | -           |
 | 3  | prices.crawler.cache.enabled                      | Boolean | Cache service                | true        |
 | 4  | prices.crawler.history.enabled                    | Boolean | Prices history service       | true        |
 | 5  | prices.crawler.history.individual.enabled         | Boolean | Product controller           | true        |

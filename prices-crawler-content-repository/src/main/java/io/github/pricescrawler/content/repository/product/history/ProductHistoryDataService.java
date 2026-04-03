@@ -4,8 +4,8 @@ package io.github.pricescrawler.content.repository.product.history;
 import io.github.pricescrawler.content.common.dao.product.ProductHistoryDao;
 import io.github.pricescrawler.content.common.dto.product.search.SearchProductsDto;
 
-import java.util.List;
-import java.util.Optional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public interface ProductHistoryDataService {
     /**
@@ -16,7 +16,7 @@ public interface ProductHistoryDataService {
      * @param reference the reference of the product to find
      * @return an Optional containing the {@link ProductHistoryDao} if found, or an empty Optional if not
      */
-    Optional<ProductHistoryDao> findProduct(String locale, String catalog, String reference);
+    Mono<ProductHistoryDao> findProduct(String locale, String catalog, String reference);
 
     /**
      * Finds all products with the specified EAN/UPC code.
@@ -24,7 +24,7 @@ public interface ProductHistoryDataService {
      * @param eanUpc the EAN/UPC code of the products to find
      * @return a list of {@link ProductHistoryDao} with the specified EAN/UPC code
      */
-    List<ProductHistoryDao> findProductsByEanUpc(String eanUpc);
+    Flux<ProductHistoryDao> findProductsByEanUpc(String eanUpc);
 
     /**
      * Saves the results of a product search to the database.
@@ -32,5 +32,5 @@ public interface ProductHistoryDataService {
      * @param searchProductsDto the search results to save
      * @param query             the search query used to find the products
      */
-    void saveSearchResult(SearchProductsDto searchProductsDto, String query);
+    Mono<Void> saveSearchResult(SearchProductsDto searchProductsDto, String query);
 }

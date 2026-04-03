@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -31,20 +32,21 @@ public class ProductListController {
         }
 
         return Flux.fromIterable(productListItems)
-                .flatMap(item -> getProductServiceFromCatalog(IdUtils.parse(item.getLocale(), item.getCatalog())).updateProductListItem(item));
+                .flatMap(item -> getProductServiceFromCatalog(IdUtils.parse(item.getLocale(), item.getCatalog()))
+                        .updateProductListItem(item));
     }
 
     @PostMapping("/store")
-    public ProductListShareDto storeProductList(@RequestBody List<ProductListItemDto> productListItems) {
+    public Mono<ProductListShareDto> storeProductList(@RequestBody List<ProductListItemDto> productListItems) {
         if (productListItems.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The list is empty");
+            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "The list is empty"));
         }
 
         return productListService.storeProductList(productListItems);
     }
 
     @GetMapping
-    public List<ProductListItemDto> retrieveProductList(@RequestParam String id) {
+    public Mono<List<ProductListItemDto>> retrieveProductList(@RequestParam String id) {
         return productListService.retrieveProductList(id);
     }
 

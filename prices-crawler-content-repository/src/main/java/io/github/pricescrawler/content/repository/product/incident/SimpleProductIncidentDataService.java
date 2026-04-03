@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
+import reactor.core.publisher.Mono;
+
 import java.util.Collections;
 
 @Log4j2
@@ -26,50 +28,38 @@ public class SimpleProductIncidentDataService implements ProductIncidentDataServ
     private final ProductIncidentDataRepository productIncidentDataRepository;
 
     @Override
-    public void saveIncident(ProductHistoryDao product, ProductDto lastProduct, String query) {
-        try {
-            var optionalIncident = productIncidentDataRepository.findById(product.getId());
-
-            if (optionalIncident.isPresent()) {
-                var incident = optionalIncident.get();
-                var lastStoredPrice = incident.getProducts().getLast();
-                var timezone = catalogDataService.findLocaleById(IdUtils.extractLocaleFromKey(lastStoredPrice.getId()))
-                        .orElseThrow().getTimezone();
-
-                if (!DateTimeUtils.areDatesOnSameDay(lastStoredPrice.getDate(), lastProduct.getDate(), timezone)) {
-                    incident.addProduct(lastProduct);
-                }
-
-                if (productDataConfig.isHintsEnabled()) {
-                    incident.incrementHits();
-                }
-
-                if (productDataConfig.isSearchTermsEnabled()) {
-                    incident.setSearchTerms(ProductUtils.parseSearchTerms(incident.getSearchTerms(), query));
-                }
-
-                productIncidentDataRepository.save(incident);
-            } else {
-                productIncidentDataRepository.save(createProductIncident(product.getId(), lastProduct, query));
-            }
-        } catch (Exception e) {
-            log.error("Error saving product incident. Product ID: {}, Product reference: {}. Error message: {}", product.getId(), lastProduct.getReference(), e.getMessage());
-        }
+    public Mono<Void> saveIncident(ProductHistoryDao product, ProductDto lastProduct, String query) {
+        return productIncidentDataRepository.findById(product.getId())
+                .flatMap(incident -> {
+                    var lastStoredPrice = incident.getProducts().getLast();
+                    return catalogDataService.findLocaleById(IdUtils.extractLocaleFromKey(lastStoredPrice.getId()))
+                            .flatMap(locale -> {
+                                if (!DateTimeUtils.areDatesOnSameDay(lastStoredPrice.getDate(), lastProduct.getDate(), locale.getTimezone())) {
+                                    incident.addProduct(lastProduct);
+                                }
+                                if (productDataConfig.isHintsEnabled()) {
+                                    incident.incrementHits();
+                                }
+                                if (productDataConfig.isSearchTermsEnabled()) {
+                                    incident.setSearchTerms(ProductUtils.parseSearchTerms(incident.getSearchTerms(), query));
+                                }
+                                return productIncidentDataRepository.save(incident);
+                            });
+                })
+                .switchIfEmpty(productIncidentDataRepository.save(createProductIncident(product.getId(), lastProduct, query)))
+                .doOnError(e -> log.error("Error saving product incident. Product ID: {}, Product reference: {}. Error message: {}",
+                        product.getId(), lastProduct.getReference(), e.getMessage()))
+                .onErrorResume(e -> Mono.empty())
+                .then();
     }
 
     @Override
-    public boolean closeIncident(String key, boolean merge) {
-        var optionalProductIncident = productIncidentDataRepository.findById(key);
-
-        if (merge && optionalProductIncident.isPresent()) {
-            mergeProductIncident(optionalProductIncident.get());
-        } else {
-            optionalProductIncident.ifPresent(incident -> productIncidentDataRepository.save(incident.closed()));
-        }
-
+    public Mono<Boolean> closeIncident(String key, boolean merge) {
         return productIncidentDataRepository.findById(key)
+                .flatMap(incident -> merge ? mergeProductIncident(incident) : productIncidentDataRepository.save(incident.closed()).then())
+                .then(productIncidentDataRepository.findById(key))
                 .map(ProductIncidentDao::isClosed)
-                .orElse(false);
+                .defaultIfEmpty(false);
     }
 
     private ProductIncidentDao createProductIncident(String productId, ProductDto lastProduct, String query) {
@@ -87,23 +77,27 @@ public class SimpleProductIncidentDataService implements ProductIncidentDataServ
         return productIncident;
     }
 
-    private void mergeProductIncident(ProductIncidentDao productIncident) {
-        var optionalProduct = productHistoryDataRepository.findById(productIncident.getId());
-        var timezone = catalogDataService.findLocaleById(IdUtils.extractLocaleFromKey(productIncident.getId()))
-                .orElseThrow().getTimezone();
+    private Mono<Void> mergeProductIncident(ProductIncidentDao productIncident) {
+        return Mono.zip(
+                        productHistoryDataRepository.findById(productIncident.getId()),
+                        catalogDataService.findLocaleById(IdUtils.extractLocaleFromKey(productIncident.getId()))
+                )
+                .flatMap(tuple -> {
+                    var product = tuple.getT1();
+                    var timezone = tuple.getT2().getTimezone();
 
-        optionalProduct.ifPresent(product -> {
-            product.incrementHits(productIncident.getHits());
+                    product.incrementHits(productIncident.getHits());
 
-            for (var incident : productIncident.getProducts()) {
-                product.updateFromProduct(incident);
-                product.setPrices(ProductUtils.parsePricesHistory(product.getPrices(), new PriceDao(incident), timezone));
-                product.setSearchTerms(ProductUtils.parseSearchTerms(product.getSearchTerms(), null));
-                product.setEanUpcList(ProductUtils.parseEanUpcList(product.getEanUpcList(), incident.getEanUpcList()));
-            }
+                    for (var incident : productIncident.getProducts()) {
+                        product.updateFromProduct(incident);
+                        product.setPrices(ProductUtils.parsePricesHistory(product.getPrices(), new PriceDao(incident), timezone));
+                        product.setSearchTerms(ProductUtils.parseSearchTerms(product.getSearchTerms(), null));
+                        product.setEanUpcList(ProductUtils.parseEanUpcList(product.getEanUpcList(), incident.getEanUpcList()));
+                    }
 
-            productHistoryDataRepository.save(product);
-            productIncidentDataRepository.save(productIncident.merged().closed());
-        });
+                    return productHistoryDataRepository.save(product)
+                            .then(productIncidentDataRepository.save(productIncident.merged().closed()));
+                })
+                .then();
     }
 }
