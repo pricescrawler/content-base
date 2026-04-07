@@ -56,3 +56,24 @@ Please report if you find any! 🙂
 - To ensure maximum performance create the following indexes:
     - _Collection:_ products
         - eanUpcList_1
+
+## 🚀 GitHub Release Process (SemVer)
+
+This repository has a manual release workflow at `.github/workflows/release.yml`.
+
+- Trigger: **Actions** -> **Release (SemVer)** -> **Run workflow**
+- Allowed branch: `main` only (workflow fails early on any other branch)
+- Bump options:
+  - `major`: `X+1.0.0`
+  - `minor`: `X.Y+1.0`
+  - `patch`: `X.Y.Z+1`
+
+What it does automatically:
+
+1. Computes the next release version from `pom.xml`.
+2. Updates all Maven modules to the release version.
+3. Creates a release commit and tag `vX.Y.Z`.
+4. Publishes a GitHub Release with auto-generated notes.
+5. Moves project to next snapshot version (`X.Y.(Z+1)-SNAPSHOT`) and commits it.
+
+> Note: This workflow creates **GitHub Releases only**. It does not publish Maven packages.
