@@ -10,9 +10,10 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.time.ZonedDateTime;
-import java.util.List;
 
 @CrossOrigin
 @RestController
@@ -24,23 +25,24 @@ public class ProductHistoryController {
     private final ProductHistoryDataService productHistoryDataService;
 
     @GetMapping
-    public List<ProductHistoryDto> searchProductByEanUpc(@RequestParam String eanUpc) {
+    public Flux<ProductHistoryDto> searchProductByEanUpc(@RequestParam String eanUpc) {
         return productHistoryDataService.findProductsByEanUpc(eanUpc)
-                .stream()
-                .map(value -> {
-                    var timezone = catalogDataService.findLocaleById(value.getLocale()).map(LocaleDao::getTimezone).orElse(null);
-                    return new ProductHistoryDto(value, timezone);
-                })
-                .toList();
+                .flatMap(value -> catalogDataService.findLocaleById(value.getLocale())
+                        .map(locale -> new ProductHistoryDto(value, locale.getTimezone()))
+                        .defaultIfEmpty(new ProductHistoryDto(value, null)));
     }
 
     @GetMapping("/{locale}/{catalog}/{reference}")
-    public ProductHistoryDto productHistory(@PathVariable String locale, @PathVariable String catalog, @PathVariable String reference,
-                                            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startDate,
-                                            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime endDate) {
-        var timezone = catalogDataService.findLocaleById(locale).map(LocaleDao::getTimezone).orElse(null);
+    public Mono<ProductHistoryDto> productHistory(@PathVariable String locale, @PathVariable String catalog,
+                                                  @PathVariable String reference,
+                                                  @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startDate,
+                                                  @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime endDate) {
         return productHistoryDataService.findProduct(locale, catalog, reference)
-                .map(value -> new ProductHistoryDto(value, timezone).withPrices(startDate, endDate))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("%s product reference not found", reference)));
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        String.format("%s product reference not found", reference))))
+                .flatMap(productData -> catalogDataService.findLocaleById(locale)
+                        .map(localeDao -> new ProductHistoryDto(productData, localeDao.getTimezone())
+                                .withPrices(startDate, endDate))
+                        .defaultIfEmpty(new ProductHistoryDto(productData, null).withPrices(startDate, endDate)));
     }
 }

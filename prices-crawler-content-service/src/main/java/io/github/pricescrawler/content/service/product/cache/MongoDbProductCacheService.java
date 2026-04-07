@@ -11,6 +11,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,109 +28,100 @@ public class MongoDbProductCacheService implements ProductCacheService {
     private final ProductCacheDataRepository productCacheDataRepository;
 
     @Override
-    public void cacheProductSearchResult(String locale, String catalog, String reference, List<ProductDto> products) {
+    public Mono<Void> cacheProductSearchResult(String locale, String catalog, String reference, List<ProductDto> products) {
         var key = IdUtils.parse(locale, catalog, reference);
-
-        if (!productCacheDataRepository.existsById(key)) {
-            productCacheDataRepository.save(new ProductCacheDao(key, DateTimeUtils.getCurrentDateTime(), products));
-        }
+        return productCacheDataRepository.findById(key)
+                .hasElement()
+                .flatMap(exists -> exists ? Mono.empty() :
+                        productCacheDataRepository.save(new ProductCacheDao(key, DateTimeUtils.getCurrentDateTime(), products)).then());
     }
 
     @Override
-    public boolean isProductSearchResultCached(String locale, String catalog, String reference) {
-        var isCached = false;
+    public Mono<Boolean> isProductSearchResultCached(String locale, String catalog, String reference) {
         var key = IdUtils.parse(locale, catalog, reference);
+        return productCacheDataRepository.findById(key)
+                .flatMap(productCacheDao -> catalogService.searchLocaleById(locale)
+                        .flatMap(localeDto -> {
+                            try {
+                                if (DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), productCacheDao.getDate(), localeDto.getTimezone())) {
+                                    return Mono.just(true);
+                                } else {
+                                    log.info(PRODUCTS_CACHE_REMOVING, key);
+                                    return productCacheDataRepository.deleteById(key).thenReturn(false);
+                                }
+                            } catch (Exception ex) {
+                                log.error("Products Cache: error - {}", ex.getMessage());
+                                return Mono.just(false);
+                            }
+                        })
+                )
+                .defaultIfEmpty(false);
+    }
 
-        if (productCacheDataRepository.existsById(key)) {
-            var productCacheDao = productCacheDataRepository.findById(key);
+    @Override
+    public Mono<Boolean> isProductSearchResultByUrl(String url) {
+        return productCacheDataRepository.findAll()
+                .flatMap(element -> Flux.fromIterable(element.getProducts())
+                        .filter(product -> url.equals(product.getProductUrl()))
+                        .flatMap(product -> catalogService.searchLocaleById(IdUtils.extractLocaleFromKey(product.getId()))
+                                .flatMap(localeDto -> {
+                                    if (DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), product.getDate(), localeDto.getTimezone())) {
+                                        return Mono.just(true);
+                                    } else {
+                                        log.info(PRODUCTS_CACHE_REMOVING, url);
+                                        return productCacheDataRepository.deleteById(element.getId()).thenReturn(false);
+                                    }
+                                })
+                                .defaultIfEmpty(false)
+                        )
+                )
+                .filter(Boolean::booleanValue)
+                .hasElements();
+    }
 
-            if (productCacheDao.isPresent()) {
-                try {
-                    var products = productCacheDao.get();
-                    var timezone = catalogService.searchLocaleById(locale).orElseThrow().getTimezone();
-
-                    if (DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), products.getDate(), timezone)) {
-                        isCached = true;
+    @Override
+    public Mono<List<ProductDto>> retrieveProductSearchResult(String locale, String catalog, String reference) {
+        var key = IdUtils.parse(locale, catalog, reference);
+        return productCacheDataRepository.findById(key)
+                .map(dao -> {
+                    var products = dao.getProducts() != null ? dao.getProducts() : List.<ProductDto>of();
+                    if (products.isEmpty()) {
+                        log.info("Products Cache: returning {} - empty", key);
                     } else {
-                        log.info(PRODUCTS_CACHE_REMOVING, key);
-                        productCacheDataRepository.deleteById(key);
+                        log.info(PRODUCTS_CACHE_RETURNING, key);
                     }
-                } catch (Exception ex) {
-                    log.error("Products Cache: error - {}", ex.getMessage());
-                }
-            }
-        }
-
-        return isCached;
+                    return products;
+                })
+                .defaultIfEmpty(new ArrayList<>());
     }
 
     @Override
-    public boolean isProductSearchResultByUrl(String url) {
-        var isCached = false;
-
-        for (var element : productCacheDataRepository.findAll()) {
-            for (var product : element.getProducts()) {
-                if (product.getProductUrl().equals(url)) {
-                    var timezone = catalogService.searchLocaleById(IdUtils.extractLocaleFromKey(product.getId()))
-                            .orElseThrow().getTimezone();
-
-                    if (DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), product.getDate(), timezone)) {
-                        return true;
-                    } else {
-                        log.info(PRODUCTS_CACHE_REMOVING, url);
-                        productCacheDataRepository.deleteById(element.getId());
-                    }
-                }
-            }
-        }
-
-        return isCached;
+    public Mono<ProductDto> retrieveProductSearchResultByUrl(String url) {
+        return productCacheDataRepository.findAll()
+                .flatMap(element -> Flux.fromIterable(element.getProducts())
+                        .filter(product -> url.equals(product.getProductUrl()))
+                        .doOnNext(product -> log.info(PRODUCTS_CACHE_RETURNING, url))
+                )
+                .next()
+                .defaultIfEmpty(ProductDto.builder().build());
     }
 
     @Override
-    public List<ProductDto> retrieveProductSearchResult(String locale, String catalog, String reference) {
-        var key = IdUtils.parse(locale, catalog, reference);
-
-        var products = productCacheDataRepository.findById(key)
-                .map(ProductCacheDto::getProducts)
-                .orElse(new ArrayList<>());
-
-        if (products.isEmpty()) {
-            log.info("Products Cache: returning {} - empty", key);
-        } else {
-            log.info(PRODUCTS_CACHE_RETURNING, key);
-        }
-
-        return products;
-    }
-
-    @Override
-    public ProductDto retrieveProductSearchResultByUrl(String url) {
-        for (var element : productCacheDataRepository.findAll()) {
-            for (var product : element.getProducts()) {
-                if (product.getProductUrl().equals(url)) {
-                    log.info(PRODUCTS_CACHE_RETURNING, url);
-                    return product;
-                }
-            }
-        }
-
-        return ProductDto.builder().build();
-    }
-
-    @Override
-    public void deleteOutdatedProductSearchResults() {
-        for (var entry : productCacheDataRepository.findAll()) {
-            try {
-                var timezone = catalogService.searchLocaleById(IdUtils.extractLocaleFromKey(entry.getId())).orElseThrow().getTimezone();
-
-                if (!DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), entry.getDate(), timezone)) {
-                    log.info(PRODUCTS_CACHE_REMOVING, entry.getId());
-                    productCacheDataRepository.deleteById(entry.getId());
-                }
-            } catch (Exception exception) {
-                log.error("Products Cache: product - {} | error - {}", entry.getId(), exception.getMessage());
-            }
-        }
+    public Mono<Void> deleteOutdatedProductSearchResults() {
+        return productCacheDataRepository.findAll()
+                .flatMap(entry -> catalogService.searchLocaleById(IdUtils.extractLocaleFromKey(entry.getId()))
+                        .flatMap(localeDto -> {
+                            if (!DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), entry.getDate(), localeDto.getTimezone())) {
+                                log.info(PRODUCTS_CACHE_REMOVING, entry.getId());
+                                return productCacheDataRepository.deleteById(entry.getId());
+                            }
+                            return Mono.empty();
+                        })
+                        .onErrorResume(ex -> {
+                            log.error("Products Cache: product - {} | error - {}", entry.getId(), ex.getMessage());
+                            return Mono.empty();
+                        })
+                )
+                .then();
     }
 }

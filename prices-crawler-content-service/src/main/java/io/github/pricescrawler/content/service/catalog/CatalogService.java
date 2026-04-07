@@ -3,8 +3,8 @@ package io.github.pricescrawler.content.service.catalog;
 import io.github.pricescrawler.content.common.dto.catalog.LocaleDto;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Service
 public interface CatalogService {
@@ -13,7 +13,7 @@ public interface CatalogService {
      *
      * @return a list of {@link LocaleDto} objects representing the available locales
      */
-    List<LocaleDto> searchLocales();
+    Flux<LocaleDto> searchLocales();
 
     /**
      * Searches a locale with the specified ID.
@@ -21,5 +21,5 @@ public interface CatalogService {
      * @param id the Locale ID
      * @return an Optional containing the {@link LocaleDto} object if found
      */
-    Optional<LocaleDto> searchLocaleById(String id);
+    Mono<LocaleDto> searchLocaleById(String id);
 }

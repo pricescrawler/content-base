@@ -7,11 +7,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+import reactor.core.publisher.Mono;
 
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class BackgroundServiceTest {
     @Mock
     private ProductListService productListService;
@@ -26,6 +29,10 @@ class BackgroundServiceTest {
 
     @BeforeEach
     void setUp() {
+        when(productListService.deleteOutdatedProductLists()).thenReturn(Mono.empty());
+        when(inMemoryProductCacheService.deleteOutdatedProductSearchResults()).thenReturn(Mono.empty());
+        when(mongoDbProductCacheService.deleteOutdatedProductSearchResults()).thenReturn(Mono.empty());
+
         backgroundService = new BackgroundService(productListService, inMemoryProductCacheService, mongoDbProductCacheService);
     }
 

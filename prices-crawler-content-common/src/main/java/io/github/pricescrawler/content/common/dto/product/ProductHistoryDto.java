@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -42,7 +43,7 @@ public class ProductHistoryDto {
         this.productUrl = product.getProductUrl();
         this.imageUrl = product.getImageUrl();
         this.eanUpc = product.getEanUpcList();
-        this.prices = product.getPrices().stream().map(value -> new PriceDto(value, timezone)).toList();
+        this.prices = new ArrayList<>(product.getPrices().stream().map(value -> new PriceDto(value, timezone)).toList());
         this.data = DataMapUtils.getMapPublicKeys(product.getData());
     }
 

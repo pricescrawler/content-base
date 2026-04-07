@@ -6,6 +6,9 @@ import io.github.pricescrawler.content.common.util.IdUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import java.util.List;
 
 @Service
@@ -14,17 +17,17 @@ public class SimpleProductDataService implements ProductDataService {
     private final ProductDataRepository productDataRepository;
 
     @Override
-    public List<ProductDao> findProducts(String locale, String catalog, String reference) {
+    public Flux<ProductDao> findProducts(String locale, String catalog, String reference) {
         return productDataRepository.findAllById(IdUtils.parse(locale, catalog, reference));
     }
 
     @Override
-    public List<ProductDao> findProductsByEanUpc(String eanUpc) {
+    public Flux<ProductDao> findProductsByEanUpc(String eanUpc) {
         return productDataRepository.findAllByEanUpcList(eanUpc);
     }
 
     @Override
-    public void save(List<ProductDto> productDtoList) {
+    public Mono<Void> save(List<ProductDto> productDtoList) {
         var products = productDtoList.stream().map(value ->
                         ProductDao.builder()
                                 .id(value.getId())
@@ -45,6 +48,6 @@ public class SimpleProductDataService implements ProductDataService {
                 )
                 .toList();
 
-        productDataRepository.saveAll(products);
+        return productDataRepository.saveAll(products).then();
     }
 }

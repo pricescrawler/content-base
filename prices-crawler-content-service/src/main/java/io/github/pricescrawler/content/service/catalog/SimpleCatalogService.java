@@ -9,10 +9,8 @@ import io.github.pricescrawler.content.repository.catalog.LocaleDataRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
@@ -22,49 +20,39 @@ public class SimpleCatalogService implements CatalogService {
     private final CategoryDataRepository categoryDataRepository;
 
     @Override
-    public List<LocaleDto> searchLocales() {
-        var locales = localeDataRepository.findAll().stream().map(LocaleDto::new).toList();
-
-        for (var locale : locales) {
-            locale.setCategories(getCategoriesAndCatalogs(locale));
-        }
-
-        return locales;
+    public Flux<LocaleDto> searchLocales() {
+        return localeDataRepository.findAll()
+                .map(LocaleDto::new)
+                .flatMap(locale -> getCategoriesAndCatalogs(locale)
+                        .collectList()
+                        .doOnNext(locale::setCategories)
+                        .thenReturn(locale));
     }
 
     @Override
-    public Optional<LocaleDto> searchLocaleById(String id) {
-        var optionalLocale = localeDataRepository.findById(id).map(LocaleDto::new);
-
-        if (optionalLocale.isPresent()) {
-            var localeDto = optionalLocale.get();
-            localeDto.setCategories(getCategoriesAndCatalogs(localeDto));
-        }
-
-        return optionalLocale;
+    public Mono<LocaleDto> searchLocaleById(String id) {
+        return localeDataRepository.findById(id)
+                .map(LocaleDto::new)
+                .flatMap(locale -> getCategoriesAndCatalogs(locale)
+                        .collectList()
+                        .doOnNext(locale::setCategories)
+                        .thenReturn(locale));
     }
 
-    private List<CategoryDto> getCategoriesAndCatalogs(LocaleDto locale) {
-        var categoryNameSet = new HashSet<String>();
-        catalogDataRepository.findAllByLocalesContains(locale.getId())
-                .stream()
-                .flatMap(catalog -> catalog.getCategories().stream())
-                .forEach(categoryNameSet::add);
-
-        var categories = new ArrayList<CategoryDto>();
-
-        for (var categoryName : categoryNameSet) {
-            var catalogs = catalogDataRepository
-                    .findAllByLocalesContainsAndCategoriesContains(locale.getId(), categoryName)
-                    .stream().map(CatalogDto::new).toList();
-            var optionalCategory = categoryDataRepository.findById(categoryName).map(CategoryDto::new);
-
-            optionalCategory.ifPresent(category -> {
-                category.setCatalogs(catalogs);
-                categories.add(category);
-            });
-        }
-
-        return categories;
+    private Flux<CategoryDto> getCategoriesAndCatalogs(LocaleDto locale) {
+        return catalogDataRepository.findAllByLocalesContains(locale.getId())
+                .flatMap(catalog -> Flux.fromIterable(catalog.getCategories()))
+                .distinct()
+                .flatMap(categoryName -> Mono.zip(
+                        catalogDataRepository.findAllByLocalesContainsAndCategoriesContains(locale.getId(), categoryName)
+                                .map(CatalogDto::new)
+                                .collectList(),
+                        categoryDataRepository.findById(categoryName).map(CategoryDto::new)
+                )
+                .map(tuple -> {
+                    var category = tuple.getT2();
+                    category.setCatalogs(tuple.getT1());
+                    return category;
+                }));
     }
 }

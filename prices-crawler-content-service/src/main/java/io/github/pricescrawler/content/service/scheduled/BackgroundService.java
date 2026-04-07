@@ -32,9 +32,10 @@ public class BackgroundService {
     public void startBackgroundService() {
         if (enabled) {
             log.info("Starting Background Service");
-            productListService.deleteOutdatedProductLists();
-            localProductCacheService.deleteOutdatedProductSearchResults();
-            mongoDbProductCacheService.deleteOutdatedProductSearchResults();
+            productListService.deleteOutdatedProductLists()
+                    .then(localProductCacheService.deleteOutdatedProductSearchResults())
+                    .then(mongoDbProductCacheService.deleteOutdatedProductSearchResults())
+                    .subscribe(null, t -> log.error("Background service error: {}", t.getMessage()));
         }
     }
 }

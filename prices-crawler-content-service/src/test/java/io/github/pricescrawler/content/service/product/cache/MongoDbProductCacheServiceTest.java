@@ -9,9 +9,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -34,17 +35,18 @@ class MongoDbProductCacheServiceTest {
         var reference = "123";
         var products = new ArrayList<ProductDto>();
 
-        when(productCacheDataRepository.existsById(anyString())).thenReturn(false);
+        when(productCacheDataRepository.findById(anyString())).thenReturn(Mono.empty());
+        when(productCacheDataRepository.save(any(ProductCacheDao.class))).thenReturn(Mono.just(new ProductCacheDao()));
 
-        productCacheService.cacheProductSearchResult(locale, catalog, reference, products);
+        productCacheService.cacheProductSearchResult(locale, catalog, reference, products).block();
         verify(productCacheDataRepository, times(1)).save(any(ProductCacheDao.class));
     }
 
     @Test
     void isProductSearchResultByUrl() {
         var url = "http://test-url";
-        when(productCacheDataRepository.findAll()).thenReturn(new ArrayList<>());
-        assertFalse(productCacheService.isProductSearchResultByUrl(url));
+        when(productCacheDataRepository.findAll()).thenReturn(Flux.empty());
+        assertFalse(productCacheService.isProductSearchResultByUrl(url).block());
     }
 
     @Test
@@ -54,9 +56,9 @@ class MongoDbProductCacheServiceTest {
         var reference = "123";
         var key = "local.demo.123";
 
-        when(productCacheDataRepository.findById(key)).thenReturn(Optional.of(new ProductCacheDao()));
+        when(productCacheDataRepository.findById(key)).thenReturn(Mono.just(new ProductCacheDao()));
 
-        var retrievedProducts = productCacheService.retrieveProductSearchResult(locale, catalog, reference);
+        var retrievedProducts = productCacheService.retrieveProductSearchResult(locale, catalog, reference).block();
         assertNotNull(retrievedProducts);
         assertTrue(retrievedProducts.isEmpty());
     }
@@ -64,12 +66,13 @@ class MongoDbProductCacheServiceTest {
     @Test
     void retrieveProductSearchResultByUrl() {
         var url = "http://test-url";
-        assertNotNull(productCacheService.retrieveProductSearchResultByUrl(url));
+        when(productCacheDataRepository.findAll()).thenReturn(Flux.empty());
+        assertNotNull(productCacheService.retrieveProductSearchResultByUrl(url).block());
     }
 
     @Test
     void deleteOutdatedProductSearchResults() {
-        when(productCacheDataRepository.findAll()).thenReturn(new ArrayList<>());
-        assertDoesNotThrow(() -> productCacheService.deleteOutdatedProductSearchResults());
+        when(productCacheDataRepository.findAll()).thenReturn(Flux.empty());
+        assertDoesNotThrow(() -> productCacheService.deleteOutdatedProductSearchResults().block());
     }
 }

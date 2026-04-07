@@ -8,16 +8,23 @@ import io.github.pricescrawler.content.repository.catalog.CatalogDataService;
 import io.github.pricescrawler.content.repository.product.ProductDataService;
 import io.github.pricescrawler.content.repository.product.history.ProductHistoryDataService;
 import io.github.pricescrawler.content.service.product.cache.ProductCacheService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+import reactor.core.publisher.Mono;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class DemoProductServiceTest {
     @Mock
     private CatalogDataService catalogDataService;
@@ -31,8 +38,18 @@ class DemoProductServiceTest {
     @Mock
     private ProductHistoryDataService productHistoryDataService;
 
-    @InjectMocks
     private DemoProductService demoProductService;
+
+    @BeforeEach
+    void setUp() {
+        when(catalogDataService.findLocaleById(anyString())).thenReturn(Mono.empty());
+        when(catalogDataService.findCatalogByIdAndLocaleId(anyString(), anyString())).thenReturn(Mono.empty());
+        when(productCacheService.isProductSearchResultCached(any(), any(), any())).thenReturn(Mono.just(false));
+        when(productCacheService.isProductSearchResultByUrl(any())).thenReturn(Mono.just(false));
+
+        demoProductService = new DemoProductService(catalogDataService, productDataService,
+                productCacheService, productHistoryDataService);
+    }
 
     @Test
     void searchItemLogic() {

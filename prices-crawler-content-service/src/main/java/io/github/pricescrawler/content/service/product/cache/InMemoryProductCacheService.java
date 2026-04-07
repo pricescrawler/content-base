@@ -10,6 +10,9 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -22,103 +25,106 @@ import java.util.concurrent.ConcurrentHashMap;
 public class InMemoryProductCacheService implements ProductCacheService {
 
     private static final String PRODUCTS_CACHE_REMOVING = "Products Cache: removing {}";
-    private static final Map<String, ProductCacheDto> cachedProducts = new ConcurrentHashMap<>();
+    private final Map<String, ProductCacheDto> cachedProducts = new ConcurrentHashMap<>();
 
     private final CatalogService catalogService;
 
     @Override
-    public void cacheProductSearchResult(String locale, String catalog, String reference, List<ProductDto> products) {
+    public Mono<Void> cacheProductSearchResult(String locale, String catalog, String reference, List<ProductDto> products) {
         var key = IdUtils.parse(locale, catalog, reference);
         cachedProducts.computeIfAbsent(key, k -> new ProductCacheDto(DateTimeUtils.getCurrentDateTime(), products));
+        return Mono.empty();
     }
 
     @Override
-    public boolean isProductSearchResultCached(String locale, String catalog, String reference) {
-        var isCached = false;
+    public Mono<Boolean> isProductSearchResultCached(String locale, String catalog, String reference) {
         var key = IdUtils.parse(locale, catalog, reference);
 
-        if (cachedProducts.containsKey(key)) {
-            var products = cachedProducts.get(key);
-            var timezone = catalogService.searchLocaleById(locale).orElseThrow().getTimezone();
-
-            try {
-                if (DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), products.getDate(), timezone)) {
-                    isCached = true;
-                } else {
-                    cachedProducts.remove(key);
-                    log.info(PRODUCTS_CACHE_REMOVING, key);
-                }
-            } catch (Exception ex) {
-                log.error("Products Cache: error - {}", ex.getMessage());
-            }
+        if (!cachedProducts.containsKey(key)) {
+            return Mono.just(false);
         }
 
-        return isCached;
-    }
-
-    @Override
-    public boolean isProductSearchResultByUrl(String url) {
-        var isCached = false;
-
-        for (var element : cachedProducts.entrySet()) {
-            for (var product : element.getValue().getProducts()) {
-                if (product.getProductUrl().equals(url)) {
-                    var timezone = catalogService.searchLocaleById(IdUtils.extractLocaleFromKey(product.getId())).orElseThrow().getTimezone();
-
-                    if (DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), product.getDate(), timezone)) {
-                        return true;
-                    } else {
-                        log.info(PRODUCTS_CACHE_REMOVING, url);
-                        cachedProducts.remove(element.getKey());
+        var products = cachedProducts.get(key);
+        return catalogService.searchLocaleById(locale)
+                .map(localeDto -> {
+                    try {
+                        if (DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), products.getDate(), localeDto.getTimezone())) {
+                            return true;
+                        } else {
+                            cachedProducts.remove(key);
+                            log.info(PRODUCTS_CACHE_REMOVING, key);
+                            return false;
+                        }
+                    } catch (Exception ex) {
+                        log.error("Products Cache: error - {}", ex.getMessage());
+                        return false;
                     }
-                }
-            }
-        }
-
-        return isCached;
+                })
+                .defaultIfEmpty(false);
     }
 
     @Override
-    public List<ProductDto> retrieveProductSearchResult(String locale, String catalog, String reference) {
-        List<ProductDto> products = new ArrayList<>();
-        var key = IdUtils.parse(locale, catalog, reference);
-
-        if (cachedProducts.containsKey(key)) {
-            products = cachedProducts.get(key).getProducts();
-
-            if (products.isEmpty()) {
-                log.info("Products Cache: returning {} - empty", key);
-            } else {
-                log.info("Products Cache: returning {}", key);
-            }
-        }
-
-        return products;
-    }
-
-    @Override
-    public ProductDto retrieveProductSearchResultByUrl(String url) {
+    public Mono<Boolean> isProductSearchResultByUrl(String url) {
         for (var element : cachedProducts.entrySet()) {
             for (var product : element.getValue().getProducts()) {
-                if (product.getProductUrl().equals(url)) {
-                    log.info("Products Cache: returning {}", url);
-                    return product;
+                if (url.equals(product.getProductUrl())) {
+                    return catalogService.searchLocaleById(IdUtils.extractLocaleFromKey(product.getId()))
+                            .map(localeDto -> {
+                                if (DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), product.getDate(), localeDto.getTimezone())) {
+                                    return true;
+                                } else {
+                                    log.info(PRODUCTS_CACHE_REMOVING, url);
+                                    cachedProducts.entrySet().removeIf(e -> e.getKey().equals(element.getKey()));
+                                    return false;
+                                }
+                            })
+                            .defaultIfEmpty(false);
                 }
             }
         }
-
-        return ProductDto.builder().build();
+        return Mono.just(false);
     }
 
     @Override
-    public void deleteOutdatedProductSearchResults() {
-        for (var entry : cachedProducts.entrySet()) {
-            var timezone = catalogService.searchLocaleById(IdUtils.extractLocaleFromKey(entry.getKey())).orElseThrow().getTimezone();
+    public Mono<List<ProductDto>> retrieveProductSearchResult(String locale, String catalog, String reference) {
+        var key = IdUtils.parse(locale, catalog, reference);
+        List<ProductDto> products = cachedProducts.containsKey(key)
+                ? new ArrayList<>(cachedProducts.get(key).getProducts())
+                : new ArrayList<>();
 
-            if (!DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), entry.getValue().getDate(), timezone)) {
-                log.info(PRODUCTS_CACHE_REMOVING, entry.getKey());
-                cachedProducts.remove(entry.getKey());
+        if (products.isEmpty()) {
+            log.info("Products Cache: returning {} - empty", key);
+        } else {
+            log.info("Products Cache: returning {}", key);
+        }
+
+        return Mono.just(products);
+    }
+
+    @Override
+    public Mono<ProductDto> retrieveProductSearchResultByUrl(String url) {
+        for (var element : cachedProducts.entrySet()) {
+            for (var product : element.getValue().getProducts()) {
+                if (url.equals(product.getProductUrl())) {
+                    log.info("Products Cache: returning {}", url);
+                    return Mono.just(product);
+                }
             }
         }
+        return Mono.just(ProductDto.builder().build());
+    }
+
+    @Override
+    public Mono<Void> deleteOutdatedProductSearchResults() {
+        return Flux.fromIterable(new ArrayList<>(cachedProducts.entrySet()))
+                .flatMap(entry -> catalogService.searchLocaleById(IdUtils.extractLocaleFromKey(entry.getKey()))
+                        .doOnNext(localeDto -> {
+                            if (!DateTimeUtils.areDatesOnSameDay(DateTimeUtils.getCurrentDateTime(), entry.getValue().getDate(), localeDto.getTimezone())) {
+                                log.info(PRODUCTS_CACHE_REMOVING, entry.getKey());
+                                cachedProducts.remove(entry.getKey());
+                            }
+                        })
+                )
+                .then();
     }
 }

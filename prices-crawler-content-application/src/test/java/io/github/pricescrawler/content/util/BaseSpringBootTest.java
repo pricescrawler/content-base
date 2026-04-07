@@ -16,14 +16,17 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.util.List;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"ACTIVE_PROFILE=demo"})
 public abstract class BaseSpringBootTest extends MongoContainerTest {
-    @Autowired
-    protected TestRestTemplate restTemplate;
+    @LocalServerPort
+    private int port;
+
+    protected WebTestClient webTestClient;
 
     @Autowired
     protected LocaleDataRepository localeDataRepository;
@@ -42,18 +45,21 @@ public abstract class BaseSpringBootTest extends MongoContainerTest {
 
     @BeforeEach
     void setup() {
-        localeDataRepository.save(getLocaleDao());
-        catalogDataRepository.save(getCatalogDao());
-        categoryDataRepository.save(getCategoryDao());
-        productHistoryDataRepository.save(getProductDao());
+        webTestClient = WebTestClient.bindToServer()
+                .baseUrl("http://localhost:" + port)
+                .build();
+        localeDataRepository.save(getLocaleDao()).block();
+        catalogDataRepository.save(getCatalogDao()).block();
+        categoryDataRepository.save(getCategoryDao()).block();
+        productHistoryDataRepository.save(getProductDao()).block();
     }
 
     @AfterEach
     void tearDown() {
-        localeDataRepository.deleteAll();
-        catalogDataRepository.deleteAll();
-        categoryDataRepository.deleteAll();
-        productHistoryDataRepository.deleteAll();
+        localeDataRepository.deleteAll().block();
+        catalogDataRepository.deleteAll().block();
+        categoryDataRepository.deleteAll().block();
+        productHistoryDataRepository.deleteAll().block();
     }
 
     protected CatalogDao getCatalogDao() {
