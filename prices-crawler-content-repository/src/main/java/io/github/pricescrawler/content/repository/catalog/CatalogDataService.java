@@ -2,7 +2,6 @@ package io.github.pricescrawler.content.repository.catalog;
 
 import io.github.pricescrawler.content.common.dao.catalog.CatalogDao;
 import io.github.pricescrawler.content.common.dao.catalog.LocaleDao;
-
 import reactor.core.publisher.Mono;
 
 public interface CatalogDataService {

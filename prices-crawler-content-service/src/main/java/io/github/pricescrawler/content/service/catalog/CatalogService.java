@@ -2,7 +2,6 @@ package io.github.pricescrawler.content.service.catalog;
 
 import io.github.pricescrawler.content.common.dto.catalog.LocaleDto;
 import org.springframework.stereotype.Service;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

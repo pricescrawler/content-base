@@ -23,25 +23,19 @@ import java.util.List;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"ACTIVE_PROFILE=demo"})
 public abstract class BaseSpringBootTest extends MongoContainerTest {
-    @LocalServerPort
-    private int port;
-
     protected WebTestClient webTestClient;
-
     @Autowired
     protected LocaleDataRepository localeDataRepository;
-
     @Autowired
     protected CatalogDataRepository catalogDataRepository;
-
     @Autowired
     protected CategoryDataRepository categoryDataRepository;
-
     @Autowired
     protected ProductHistoryDataRepository productHistoryDataRepository;
-
     @Autowired
     protected ProductListDataRepository productListDataRepository;
+    @LocalServerPort
+    private int port;
 
     @BeforeEach
     void setup() {

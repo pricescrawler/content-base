@@ -3,7 +3,6 @@ package io.github.pricescrawler.content.repository.product.list;
 import io.github.pricescrawler.content.common.dao.product.list.ProductListDao;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
