@@ -105,6 +105,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.release }}
+          name: Version ${{ steps.version.outputs.release }}
           generate_release_notes: true
 
       - name: Set next development version
