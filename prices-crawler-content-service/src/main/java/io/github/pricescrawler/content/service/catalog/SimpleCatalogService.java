@@ -8,7 +8,6 @@ import io.github.pricescrawler.content.repository.catalog.CategoryDataRepository
 import io.github.pricescrawler.content.repository.catalog.LocaleDataRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -44,15 +43,15 @@ public class SimpleCatalogService implements CatalogService {
                 .flatMap(catalog -> Flux.fromIterable(catalog.getCategories()))
                 .distinct()
                 .flatMap(categoryName -> Mono.zip(
-                        catalogDataRepository.findAllByLocalesContainsAndCategoriesContains(locale.getId(), categoryName)
-                                .map(CatalogDto::new)
-                                .collectList(),
-                        categoryDataRepository.findById(categoryName).map(CategoryDto::new)
-                )
-                .map(tuple -> {
-                    var category = tuple.getT2();
-                    category.setCatalogs(tuple.getT1());
-                    return category;
-                }));
+                                catalogDataRepository.findAllByLocalesContainsAndCategoriesContains(locale.getId(), categoryName)
+                                        .map(CatalogDto::new)
+                                        .collectList(),
+                                categoryDataRepository.findById(categoryName).map(CategoryDto::new)
+                        )
+                        .map(tuple -> {
+                            var category = tuple.getT2();
+                            category.setCatalogs(tuple.getT1());
+                            return category;
+                        }));
     }
 }

@@ -2,7 +2,6 @@ package io.github.pricescrawler.content.service.product.cache;
 
 import io.github.pricescrawler.content.common.dao.product.cache.ProductCacheDao;
 import io.github.pricescrawler.content.common.dto.product.ProductDto;
-import io.github.pricescrawler.content.common.dto.product.cache.ProductCacheDto;
 import io.github.pricescrawler.content.common.util.DateTimeUtils;
 import io.github.pricescrawler.content.common.util.IdUtils;
 import io.github.pricescrawler.content.repository.product.cache.ProductCacheDataRepository;
@@ -10,7 +9,6 @@ import io.github.pricescrawler.content.service.catalog.CatalogService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

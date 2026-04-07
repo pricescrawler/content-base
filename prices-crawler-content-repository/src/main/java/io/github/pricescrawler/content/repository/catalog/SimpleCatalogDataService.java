@@ -5,7 +5,6 @@ import io.github.pricescrawler.content.common.dao.catalog.LocaleDao;
 import io.github.pricescrawler.content.common.util.IdUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import reactor.core.publisher.Mono;
 
 @Service

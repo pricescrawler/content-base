@@ -1,10 +1,10 @@
-FROM maven:3.9.6-amazoncorretto-21 AS builder
+FROM maven:3.9.6-amazoncorretto-25 AS builder
 WORKDIR /application
 COPY ./ ./
 RUN mvn clean package \
 && java -Djarmode=layertools -jar prices-crawler-content-application/target/*.jar extract
 
-FROM amazoncorretto:21
+FROM amazoncorretto:25
 LABEL PROJECT_NAME=prices-crawler-content-api
 WORKDIR /application
 COPY --from=builder application/dependencies/ ./

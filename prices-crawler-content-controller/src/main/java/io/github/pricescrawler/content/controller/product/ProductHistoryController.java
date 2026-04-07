@@ -1,6 +1,5 @@
 package io.github.pricescrawler.content.controller.product;
 
-import io.github.pricescrawler.content.common.dao.catalog.LocaleDao;
 import io.github.pricescrawler.content.common.dto.product.ProductHistoryDto;
 import io.github.pricescrawler.content.repository.catalog.CatalogDataService;
 import io.github.pricescrawler.content.repository.product.history.ProductHistoryDataService;

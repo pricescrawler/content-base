@@ -3,7 +3,6 @@ package io.github.pricescrawler.content.repository.product.history;
 
 import io.github.pricescrawler.content.common.dao.product.ProductHistoryDao;
 import io.github.pricescrawler.content.common.dto.product.search.SearchProductsDto;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

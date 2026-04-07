@@ -3,7 +3,6 @@ package io.github.pricescrawler.content.repository.product.history;
 import io.github.pricescrawler.content.common.dao.product.ProductHistoryDao;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.stereotype.Repository;
-
 import reactor.core.publisher.Flux;
 
 @Repository

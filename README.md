@@ -11,7 +11,7 @@ comparison and analysis.
 
 | # | name    | Value   |
 |---|---------|---------|
-| 1 | `Java`  | `21`    |
+| 1 | `Java`  | `25`    |
 | 2 | `Maven` | `3.9.6` |
 
 ## ⚠️ Known Issues
@@ -64,9 +64,9 @@ This repository has a manual release workflow at `.github/workflows/release.yml`
 - Trigger: **Actions** -> **Release (SemVer)** -> **Run workflow**
 - Allowed branch: `main` only (workflow fails early on any other branch)
 - Bump options:
-  - `major`: `X+1.0.0`
-  - `minor`: `X.Y+1.0`
-  - `patch`: `X.Y.Z+1`
+    - `major`: `X+1.0.0`
+    - `minor`: `X.Y+1.0`
+    - `patch`: `X.Y.Z+1`
 
 What it does automatically:
 

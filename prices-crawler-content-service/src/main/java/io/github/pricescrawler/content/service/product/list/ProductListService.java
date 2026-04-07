@@ -2,7 +2,6 @@ package io.github.pricescrawler.content.service.product.list;
 
 import io.github.pricescrawler.content.common.dto.product.ProductListItemDto;
 import io.github.pricescrawler.content.common.dto.product.ProductListShareDto;
-
 import reactor.core.publisher.Mono;
 
 import java.util.List;
