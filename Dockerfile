@@ -1,4 +1,4 @@
-FROM maven:3.9.6-amazoncorretto-25 AS builder
+FROM maven:3.9.12-amazoncorretto-25 AS builder
 WORKDIR /application
 COPY ./ ./
 RUN mvn clean package \

@@ -50,12 +50,14 @@ public class SimpleProductHistoryDataService implements ProductHistoryDataServic
                             .flatMap(productData -> {
                                 if (isProductDataEquals(productData, productDto)) {
                                     return updatedProductData(productData, productDto, query)
-                                            .flatMap(this::saveProduct);
+                                            .flatMap(this::saveProduct)
+                                            .thenReturn(true);
                                 } else {
-                                    return productIncidentDataService.saveIncident(productData, productDto, query);
+                                    return productIncidentDataService.saveIncident(productData, productDto, query)
+                                            .thenReturn(true);
                                 }
                             })
-                            .switchIfEmpty(createProductData(searchProducts.getLocale(), searchProducts.getCatalog(), productDto, query));
+                            .switchIfEmpty(createProductData(searchProducts.getLocale(), searchProducts.getCatalog(), productDto, query).thenReturn(false));
                 })
                 .then();
     }
