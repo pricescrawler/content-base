@@ -23,7 +23,7 @@
 
     <properties>
         <java.version>25</java.version>
-        <lombok.version>1.18.42</lombok.version>
+        <lombok.version>1.18.46</lombok.version>
         <springdoc.version>3.0.2</springdoc.version>
     </properties>
 
