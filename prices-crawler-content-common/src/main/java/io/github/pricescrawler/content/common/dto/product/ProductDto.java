@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +19,23 @@ public class ProductDto {
     private String name;
     private String regularPrice;
     private String campaignPrice;
+    /**
+     * Numeric values derived from the display price strings (see
+     * {@code PriceUtils.enrichPrices}); {@code null} when not parseable.
+     */
+    private BigDecimal regularPriceValue;
+    private BigDecimal campaignPriceValue;
+    /**
+     * ISO 4217 currency code derived from the display price strings.
+     */
+    private String currency;
     private String pricePerQuantity;
+    /**
+     * Numeric unit price and normalized unit (KG, G, L, ML, UN, …) derived from
+     * {@code pricePerQuantity}; {@code null} when not parseable.
+     */
+    private BigDecimal pricePerQuantityValue;
+    private String pricePerQuantityUnit;
     private String quantity;
     private String brand;
     private String description;
