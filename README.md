@@ -10,12 +10,12 @@ it with one product service per catalog.
 
 ## 📁 Requirements
 
-| Component | Version |
-|---|---|
-| Java | 25+ |
-| Maven | 3.9.6+ |
-| MongoDB | 4.0+ |
-| Spring Boot | 4.1.0 |
+| Component   | Version |
+|-------------|---------|
+| Java        | 25+     |
+| Maven       | 3.9.6+  |
+| MongoDB     | 4.0+    |
+| Spring Boot | 4.1.0   |
 
 ## 📂 Modules
 
@@ -42,22 +42,22 @@ API: `http://localhost:8080` · Swagger UI: `http://localhost:8080/swagger-ui.ht
 
 ### Environment Variables
 
-| Variable | Description |
-|---|---|
+| Variable         | Description                       |
+|------------------|-----------------------------------|
 | `ACTIVE_PROFILE` | Spring profile (`dev`, `prod`, …) |
-| `PORT` | HTTP server port (default `8080`) |
-| `DATABASE_URL` | MongoDB connection URI |
-| `DATABASE_NAME` | MongoDB database name |
+| `PORT`           | HTTP server port (default `8080`) |
+| `DATABASE_URL`   | MongoDB connection URI            |
+| `DATABASE_NAME`  | MongoDB database name             |
 
 ### Key feature toggles
 
-| Property | Default | Purpose |
-|---|---|---|
-| `prices.crawler.cache.enabled` | `true` | Result caching |
-| `prices.crawler.history.enabled` | `true` | Price history tracking |
-| `prices.crawler.catalog.data.refresh-seconds` | `300` | Locale/catalog toggle refresh interval (`0` = startup snapshot only) |
-| `prices.crawler.controller.product.search.enabled` | `false` | Enable the search endpoint |
-| `prices.crawler.background.service.cron.enabled` | `false` | Enable the background cleanup job |
+| Property                                           | Default | Purpose                                                              |
+|----------------------------------------------------|---------|----------------------------------------------------------------------|
+| `prices.crawler.cache.enabled`                     | `true`  | Result caching                                                       |
+| `prices.crawler.history.enabled`                   | `true`  | Price history tracking                                               |
+| `prices.crawler.catalog.data.refresh-seconds`      | `300`   | Locale/catalog toggle refresh interval (`0` = startup snapshot only) |
+| `prices.crawler.controller.product.search.enabled` | `false` | Enable the search endpoint                                           |
+| `prices.crawler.background.service.cron.enabled`   | `false` | Enable the background cleanup job                                    |
 
 ## 📚 Documentation
 
