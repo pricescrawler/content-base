@@ -8,11 +8,13 @@ import io.github.pricescrawler.content.common.dto.product.filter.FilterProductBy
 import io.github.pricescrawler.content.common.dto.product.filter.FilterProductByUrlDto;
 import io.github.pricescrawler.content.common.dto.product.search.SearchProductDto;
 import io.github.pricescrawler.content.common.dto.product.search.SearchProductsDto;
+import io.github.pricescrawler.content.common.util.PriceUtils;
 import io.github.pricescrawler.content.repository.catalog.CatalogDataService;
 import io.github.pricescrawler.content.repository.product.ProductDataService;
 import io.github.pricescrawler.content.repository.product.history.ProductHistoryDataService;
 import io.github.pricescrawler.content.service.product.ProductService;
 import io.github.pricescrawler.content.service.product.cache.ProductCacheService;
+import io.micrometer.core.instrument.Metrics;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import reactor.core.publisher.Flux;
@@ -22,13 +24,17 @@ import java.util.*;
 
 @Log4j2
 public abstract class BaseProductService implements ProductService {
+    private static final String SEARCH_METRIC = "prices.crawler.product.search";
+
     protected final String localeId;
     protected final String catalogId;
+    private final CatalogDataService catalogDataService;
     private final ProductCacheService productCacheService;
     private final ProductDataService productDataService;
     private final ProductHistoryDataService productHistoryDataService;
-    protected Optional<LocaleDao> optionalLocale;
-    protected Optional<CatalogDao> optionalCatalog;
+    protected volatile Optional<LocaleDao> optionalLocale;
+    protected volatile Optional<CatalogDao> optionalCatalog;
+    private volatile long lastCatalogDataRefreshMillis;
 
     @Value("${prices.crawler.cache.enabled:true}")
     private boolean isCacheEnabled;
@@ -38,6 +44,13 @@ public abstract class BaseProductService implements ProductService {
     private boolean isIndividualHistoryEnabled;
     @Value("${prices.crawler.history.aggregated.enabled:true}")
     private boolean isAggregatedHistoryEnabled;
+    /**
+     * How often (in seconds) the locale/catalog configuration is re-read from the
+     * database, so toggles (active, cache, history) applied in the back-office take
+     * effect without a restart. {@code 0} disables refreshing (startup snapshot only).
+     */
+    @Value("${prices.crawler.catalog.data.refresh-seconds:300}")
+    private long catalogDataRefreshSeconds;
 
     protected BaseProductService(String localeId, String catalogId,
                                  CatalogDataService catalogDataService,
@@ -46,11 +59,13 @@ public abstract class BaseProductService implements ProductService {
                                  ProductHistoryDataService productHistoryDataService) {
         this.localeId = localeId;
         this.catalogId = catalogId;
+        this.catalogDataService = catalogDataService;
         this.productCacheService = productCacheService;
         this.productDataService = productDataService;
         this.productHistoryDataService = productHistoryDataService;
         this.optionalLocale = catalogDataService.findLocaleById(localeId).blockOptional();
         this.optionalCatalog = catalogDataService.findCatalogByIdAndLocaleId(catalogId, localeId).blockOptional();
+        this.lastCatalogDataRefreshMillis = System.currentTimeMillis();
     }
 
     /**
@@ -80,6 +95,8 @@ public abstract class BaseProductService implements ProductService {
 
     @Override
     public Mono<SearchProductsDto> searchProductByQuery(FilterProductByQueryDto filterProductByQuery) {
+        refreshCatalogDataIfStale();
+
         var query = filterProductByQuery.getQuery();
         var storeId = filterProductByQuery.getStoreId();
         var composedCatalogKey = filterProductByQuery.getComposedCatalogKey();
@@ -92,14 +109,23 @@ public abstract class BaseProductService implements ProductService {
         return productCacheService.isProductSearchResultCached(localeId, composedCatalogKey, query)
                 .flatMap(cached -> {
                     if (cached) {
+                        incrementSearchMetric("query", "cached");
                         return productCacheService.retrieveProductSearchResult(localeId, composedCatalogKey, query)
                                 .map(cacheResult -> new SearchProductsDto(localeId, composedCatalogKey, cacheResult,
                                         generateCatalogData(storeId)));
                     }
                     return searchItemLogic(filterProductByQuery)
+                            .doOnNext(value -> {
+                                if (value.getProducts() != null) {
+                                    value.getProducts().forEach(PriceUtils::enrichPrices);
+                                }
+                                incrementSearchMetric("query",
+                                        value.getProducts() == null || value.getProducts().isEmpty() ? "empty" : "success");
+                            })
                             .flatMap(value -> saveProductsToDatabaseAndCache(value, query, composedCatalogKey, storeId))
                             .onErrorResume(t -> {
                                 log.error(t.getMessage());
+                                incrementSearchMetric("query", "error");
                                 return Mono.just(SearchProductsDto.builder()
                                         .locale(localeId)
                                         .catalog(composedCatalogKey)
@@ -112,6 +138,8 @@ public abstract class BaseProductService implements ProductService {
 
     @Override
     public Mono<SearchProductDto> searchProductByProductUrl(FilterProductByUrlDto filterProductByUrl) {
+        refreshCatalogDataIfStale();
+
         var productUrl = filterProductByUrl.getUrl();
         var storeId = filterProductByUrl.getStoreId();
         var composedCatalogKey = filterProductByUrl.getComposedCatalogKey();
@@ -124,13 +152,19 @@ public abstract class BaseProductService implements ProductService {
         return productCacheService.isProductSearchResultByUrl(productUrl)
                 .flatMap(cached -> {
                     if (cached) {
+                        incrementSearchMetric("url", "cached");
                         return productCacheService.retrieveProductSearchResultByUrl(productUrl)
                                 .map(cacheResult -> new SearchProductDto(localeId, composedCatalogKey, cacheResult));
                     }
                     return searchItemByProductUrlLogic(filterProductByUrl)
+                            .doOnNext(value -> {
+                                PriceUtils.enrichPrices(value.getProduct());
+                                incrementSearchMetric("url", value.getProduct() == null ? "empty" : "success");
+                            })
                             .flatMap(value -> saveProductToDatabase(value, null, composedCatalogKey, storeId))
                             .onErrorResume(t -> {
                                 log.error(t.getMessage());
+                                incrementSearchMetric("url", "error");
                                 return Mono.just(SearchProductDto.builder().build());
                             });
                 });
@@ -138,15 +172,73 @@ public abstract class BaseProductService implements ProductService {
 
     @Override
     public Mono<ProductListItemDto> updateProductListItem(ProductListItemDto productListItem) {
+        refreshCatalogDataIfStale();
+
         if (isLocaleOrCatalogOrStoreDisabled(null)) {
             return Mono.just(productListItem);
         }
 
         return updateItemLogic(productListItem)
+                .doOnNext(value -> {
+                    PriceUtils.enrichPrices(value.getProduct());
+                    incrementSearchMetric("update", "success");
+                })
                 .onErrorResume(t -> {
                     log.error(t.getMessage());
+                    incrementSearchMetric("update", "error");
                     return Mono.just(productListItem);
                 });
+    }
+
+    /**
+     * Re-reads the locale/catalog configuration from the database when the last
+     * snapshot is older than {@code prices.crawler.catalog.data.refresh-seconds}, so
+     * back-office toggle changes propagate without a restart. The refresh is
+     * asynchronous and non-blocking: the current request still uses the previous
+     * snapshot, later requests see the updated one. Note that values captured by
+     * implementations at construction time (e.g. the catalog base URL) are not
+     * refreshed.
+     */
+    private void refreshCatalogDataIfStale() {
+        if (catalogDataRefreshSeconds <= 0) {
+            return;
+        }
+
+        var now = System.currentTimeMillis();
+
+        if (now - lastCatalogDataRefreshMillis < catalogDataRefreshSeconds * 1000) {
+            return;
+        }
+
+        lastCatalogDataRefreshMillis = now;
+
+        catalogDataService.findLocaleById(localeId)
+                .map(Optional::of)
+                .defaultIfEmpty(Optional.empty())
+                .subscribe(value -> optionalLocale = value,
+                        t -> log.warn("Failed to refresh locale data for {}: {}", localeId, t.getMessage()));
+
+        catalogDataService.findCatalogByIdAndLocaleId(catalogId, localeId)
+                .map(Optional::of)
+                .defaultIfEmpty(Optional.empty())
+                .subscribe(value -> optionalCatalog = value,
+                        t -> log.warn("Failed to refresh catalog data for {}.{}: {}", localeId, catalogId,
+                                t.getMessage()));
+    }
+
+    /**
+     * Increments the per-catalog search counter. Metrics are published through the
+     * global Micrometer registry, which Spring Boot wires to the application registry
+     * (e.g. Prometheus) by default. Outcomes: {@code cached}, {@code success},
+     * {@code empty} (fetch worked but nothing was parsed — the main signal for broken
+     * catalog parsers) and {@code error}.
+     */
+    private void incrementSearchMetric(String type, String outcome) {
+        Metrics.counter(SEARCH_METRIC,
+                "locale", localeId,
+                "catalog", catalogId,
+                "type", type,
+                "outcome", outcome).increment();
     }
 
     protected Map<String, Object> generateCatalogData(String storeId) {
