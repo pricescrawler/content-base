@@ -62,6 +62,7 @@ public abstract class BaseSpringBootTest extends MongoContainerTest {
                 .name("Demo")
                 .locales(List.of("local"))
                 .categories(List.of("demo-category"))
+                .isClientFetchRequired(true)
                 .build();
     }
 
