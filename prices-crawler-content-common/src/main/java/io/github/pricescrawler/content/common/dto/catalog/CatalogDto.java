@@ -1,4 +1,4 @@
-package io.github.pricescrawler.content.common.dto.catalog;
+ package io.github.pricescrawler.content.common.dto.catalog;
 
 import io.github.pricescrawler.content.common.dao.catalog.CatalogDao;
 import io.github.pricescrawler.content.common.util.DataMapUtils;
@@ -22,6 +22,8 @@ public class CatalogDto {
     private String description;
     private List<StoreDto> stores;
     private boolean isActive;
+    private boolean isClientFetchRequired;
+    private String clientFetchSearchUrlTemplate;
     private Map<String, Object> data;
 
     public CatalogDto(CatalogDao catalog) {
@@ -32,6 +34,8 @@ public class CatalogDto {
         this.description = catalog.getDescription();
         this.stores = catalog.getStores() != null ? catalog.getStores().stream().map(StoreDto::new).toList() : null;
         this.isActive = catalog.isActive();
+        this.isClientFetchRequired = catalog.isClientFetchRequired();
+        this.clientFetchSearchUrlTemplate = catalog.getClientFetchSearchUrlTemplate();
         this.data = DataMapUtils.getMapPublicKeys(catalog.getData());
     }
 }

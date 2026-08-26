@@ -52,6 +52,28 @@ request. `BaseProductService` wraps the three methods with:
 6. **Error isolation** — fetch/parse failures are logged and converted into empty
    results; clients always get a well-formed payload.
 
+## Client-side fetch (bot-protection escape hatch)
+
+A catalog can set `isClientFetchRequired: true` (`CatalogDao`) to tell the backend to
+never fetch from it directly — meant for sites whose bot protection blocks the
+backend's own (datacenter) IP. Instead:
+
+1. The client (e.g. a real browser, not the backend) fetches the catalog's search page
+   itself, at `baseUrl` + `clientFetchSearchUrlTemplate` (a path with a `{query}`
+   placeholder).
+2. The client POSTs the raw content to `ProductContentParserController`
+   (`/api/v1/products/parser` or `/parser/list`) with `{catalog, url, content, date}`.
+3. The controller looks up the catalog, rejects with `403` unless
+   `isClientFetchRequired` is `true` (`404` if the catalog doesn't exist), then calls
+   the catalog's own `parseProductFromContent`/`parseProductsFromContent` directly —
+   the exact same parsing code a normal server-side search would use. No new parsing
+   logic is needed per client-fetch catalog, only the URL template.
+
+This trades background/scheduled scraping (nothing to fetch without a live client) for
+reachability against bot-protected sites; a catalog with this flag has no scheduled
+history collection unless something (an app, an extension) fetches on its behalf
+periodically.
+
 ## Data model (MongoDB)
 
 | Collection / DAO                                                           | Content                                                                                                                                                           |
