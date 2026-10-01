@@ -2,6 +2,7 @@ package io.github.pricescrawler.content.service.product.base;
 
 import io.github.pricescrawler.content.common.dao.catalog.CatalogDao;
 import io.github.pricescrawler.content.common.dao.catalog.LocaleDao;
+import io.github.pricescrawler.content.common.dao.catalog.StoreDao;
 import io.github.pricescrawler.content.common.dto.product.ProductDto;
 import io.github.pricescrawler.content.common.dto.product.ProductListItemDto;
 import io.github.pricescrawler.content.common.dto.product.filter.FilterProductByQueryDto;
@@ -28,6 +29,8 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -164,5 +167,46 @@ class BaseProductServiceRefreshTest {
 
         assertNotNull(result);
         assertTrue(result.getProducts().isEmpty(), "Deactivated catalog should return no products");
+    }
+
+    private void useCatalogWithStore(boolean storeActive) {
+        var store = StoreDao.builder().id("store1").name("Store 1").isActive(storeActive).build();
+        ReflectionTestUtils.setField(productService, "optionalLocale",
+                Optional.of(LocaleDao.builder().id("local").isActive(true).build()));
+        ReflectionTestUtils.setField(productService, "optionalCatalog",
+                Optional.of(CatalogDao.builder().id("demo").stores(List.of(store)).build()));
+    }
+
+    private FilterProductByQueryDto storeQueryFilter() {
+        return FilterProductByQueryDto.builder().composedCatalogKey("demo#store1").storeId("store1")
+                .query("dummy").build();
+    }
+
+    @Test
+    void deactivatedStoreIsNotSearched() {
+        useCatalogWithStore(false);
+
+        var result = productService.searchProductByQuery(storeQueryFilter()).block();
+
+        assertNotNull(result);
+        assertTrue(result.getProducts().isEmpty(), "Deactivated store should return no products");
+        verify(productCacheService, never()).isProductSearchResultCached(any(), any(), any());
+    }
+
+    @Test
+    void activeStoreIsSearched() {
+        useCatalogWithStore(true);
+
+        productService.searchProductByQuery(storeQueryFilter()).block();
+
+        verify(productCacheService).isProductSearchResultCached("local", "demo#store1", "dummy");
+    }
+
+    @Test
+    void catalogWithoutStoresDoesNotFail() {
+        ReflectionTestUtils.setField(productService, "optionalCatalog",
+                Optional.of(CatalogDao.builder().id("demo").build()));
+
+        assertDoesNotThrow(() -> productService.searchProductByQuery(storeQueryFilter()).block());
     }
 }

@@ -3,7 +3,6 @@ package io.github.pricescrawler.content.controller.product;
 import io.github.pricescrawler.content.common.dto.product.ProductListItemDto;
 import io.github.pricescrawler.content.common.dto.product.ProductListShareDto;
 import io.github.pricescrawler.content.common.util.IdUtils;
-import io.github.pricescrawler.content.service.product.ProductService;
 import io.github.pricescrawler.content.service.product.list.ProductListService;
 import io.github.pricescrawler.content.service.product.provider.ProductServiceProvider;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +31,8 @@ public class ProductListController {
         }
 
         return Flux.fromIterable(productListItems)
-                .flatMap(item -> getProductServiceFromCatalog(IdUtils.parse(item.getLocale(), item.getCatalog()))
+                .flatMap(item -> ProductServiceResolver.resolve(productServiceProvider,
+                                IdUtils.parse(item.getLocale(), item.getCatalog()))
                         .updateProductListItem(item));
     }
 
@@ -48,13 +48,5 @@ public class ProductListController {
     @GetMapping
     public Mono<List<ProductListItemDto>> retrieveProductList(@RequestParam String id) {
         return productListService.retrieveProductList(id);
-    }
-
-    private ProductService getProductServiceFromCatalog(String catalogAlias) {
-        try {
-            return productServiceProvider.getServiceFromCatalog(catalogAlias);
-        } catch (Exception ex) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("%s catalog not found", catalogAlias));
-        }
     }
 }

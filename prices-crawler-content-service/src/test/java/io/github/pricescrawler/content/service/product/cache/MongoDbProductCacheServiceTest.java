@@ -45,7 +45,7 @@ class MongoDbProductCacheServiceTest {
     @Test
     void isProductSearchResultByUrl() {
         var url = "http://test-url";
-        when(productCacheDataRepository.findAll()).thenReturn(Flux.empty());
+        when(productCacheDataRepository.findAllByProductsProductUrl(url)).thenReturn(Flux.empty());
         assertFalse(productCacheService.isProductSearchResultByUrl(url).block());
     }
 
@@ -66,7 +66,7 @@ class MongoDbProductCacheServiceTest {
     @Test
     void retrieveProductSearchResultByUrl() {
         var url = "http://test-url";
-        when(productCacheDataRepository.findAll()).thenReturn(Flux.empty());
+        when(productCacheDataRepository.findAllByProductsProductUrl(url)).thenReturn(Flux.empty());
         assertNotNull(productCacheService.retrieveProductSearchResultByUrl(url).block());
     }
 

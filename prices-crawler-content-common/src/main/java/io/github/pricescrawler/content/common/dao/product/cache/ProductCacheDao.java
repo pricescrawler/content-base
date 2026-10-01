@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document("product-cache")
+@CompoundIndex(name = "products_productUrl", def = "{'products.productUrl': 1}")
 @EqualsAndHashCode(callSuper = true)
 public class ProductCacheDao extends ProductCacheDto {
     @Id

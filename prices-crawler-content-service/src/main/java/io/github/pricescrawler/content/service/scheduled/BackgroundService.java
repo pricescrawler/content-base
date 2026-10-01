@@ -35,7 +35,7 @@ public class BackgroundService {
             productListService.deleteOutdatedProductLists()
                     .then(localProductCacheService.deleteOutdatedProductSearchResults())
                     .then(mongoDbProductCacheService.deleteOutdatedProductSearchResults())
-                    .subscribe(null, t -> log.error("Background service error: {}", t.getMessage()));
+                    .subscribe(null, t -> log.error("Background service error", t));
         }
     }
 }
