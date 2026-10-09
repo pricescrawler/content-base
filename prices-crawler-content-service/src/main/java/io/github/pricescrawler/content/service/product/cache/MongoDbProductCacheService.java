@@ -48,7 +48,7 @@ public class MongoDbProductCacheService implements ProductCacheService {
                                     return productCacheDataRepository.deleteById(key).thenReturn(false);
                                 }
                             } catch (Exception ex) {
-                                log.error("Products Cache: error - {}", ex.getMessage());
+                                log.error("Products Cache: error checking {}", key, ex);
                                 return Mono.just(false);
                             }
                         })
@@ -58,7 +58,7 @@ public class MongoDbProductCacheService implements ProductCacheService {
 
     @Override
     public Mono<Boolean> isProductSearchResultByUrl(String url) {
-        return productCacheDataRepository.findAll()
+        return productCacheDataRepository.findAllByProductsProductUrl(url)
                 .flatMap(element -> Flux.fromIterable(element.getProducts())
                         .filter(product -> url.equals(product.getProductUrl()))
                         .flatMap(product -> catalogService.searchLocaleById(IdUtils.extractLocaleFromKey(product.getId()))
@@ -95,7 +95,7 @@ public class MongoDbProductCacheService implements ProductCacheService {
 
     @Override
     public Mono<ProductDto> retrieveProductSearchResultByUrl(String url) {
-        return productCacheDataRepository.findAll()
+        return productCacheDataRepository.findAllByProductsProductUrl(url)
                 .flatMap(element -> Flux.fromIterable(element.getProducts())
                         .filter(product -> url.equals(product.getProductUrl()))
                         .doOnNext(product -> log.info(PRODUCTS_CACHE_RETURNING, url))
@@ -116,7 +116,7 @@ public class MongoDbProductCacheService implements ProductCacheService {
                             return Mono.empty();
                         })
                         .onErrorResume(ex -> {
-                            log.error("Products Cache: product - {} | error - {}", entry.getId(), ex.getMessage());
+                            log.error("Products Cache: error removing {}", entry.getId(), ex);
                             return Mono.empty();
                         })
                 )

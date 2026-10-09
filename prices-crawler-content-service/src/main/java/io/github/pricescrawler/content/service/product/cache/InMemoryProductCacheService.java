@@ -55,7 +55,7 @@ public class InMemoryProductCacheService implements ProductCacheService {
                             return false;
                         }
                     } catch (Exception ex) {
-                        log.error("Products Cache: error - {}", ex.getMessage());
+                        log.error("Products Cache: error checking {}", key, ex);
                         return false;
                     }
                 })
@@ -73,7 +73,7 @@ public class InMemoryProductCacheService implements ProductCacheService {
                                     return true;
                                 } else {
                                     log.info(PRODUCTS_CACHE_REMOVING, url);
-                                    cachedProducts.entrySet().removeIf(e -> e.getKey().equals(element.getKey()));
+                                    cachedProducts.remove(element.getKey());
                                     return false;
                                 }
                             })

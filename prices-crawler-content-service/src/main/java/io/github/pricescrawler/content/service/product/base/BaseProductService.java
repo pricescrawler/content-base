@@ -124,7 +124,7 @@ public abstract class BaseProductService implements ProductService {
                             })
                             .flatMap(value -> saveProductsToDatabaseAndCache(value, query, composedCatalogKey, storeId))
                             .onErrorResume(t -> {
-                                log.error(t.getMessage());
+                                log.error("Error searching {}.{} by query", localeId, catalogId, t);
                                 incrementSearchMetric("query", "error");
                                 return Mono.just(SearchProductsDto.builder()
                                         .locale(localeId)
@@ -163,7 +163,7 @@ public abstract class BaseProductService implements ProductService {
                             })
                             .flatMap(value -> saveProductToDatabase(value, null, composedCatalogKey, storeId))
                             .onErrorResume(t -> {
-                                log.error(t.getMessage());
+                                log.error("Error searching {}.{} by product URL", localeId, catalogId, t);
                                 incrementSearchMetric("url", "error");
                                 return Mono.just(SearchProductDto.builder().build());
                             });
@@ -184,7 +184,7 @@ public abstract class BaseProductService implements ProductService {
                     incrementSearchMetric("update", "success");
                 })
                 .onErrorResume(t -> {
-                    log.error(t.getMessage());
+                    log.error("Error updating product list item for {}.{}", localeId, catalogId, t);
                     incrementSearchMetric("update", "error");
                     return Mono.just(productListItem);
                 });
@@ -258,12 +258,12 @@ public abstract class BaseProductService implements ProductService {
                 var searchResultDto = new SearchProductsDto(localeId, composedCatalogKey,
                         List.of(searchProductDto.getProduct()), generateCatalogData(storeId));
                 productHistoryDataService.saveSearchResult(searchResultDto, query)
-                        .subscribe(null, t -> log.error("Error saving product history: {}", t.getMessage()));
+                        .subscribe(null, t -> log.error("Error saving product history", t));
             }
 
             if (isIndividualHistoryEnabled) {
                 productDataService.save(List.of(searchProductDto.getProduct()))
-                        .subscribe(null, t -> log.error("Error saving product data: {}", t.getMessage()));
+                        .subscribe(null, t -> log.error("Error saving product data", t));
             }
         }
 
@@ -277,13 +277,13 @@ public abstract class BaseProductService implements ProductService {
                     .map(product -> new SearchProductDto(searchProductsDto.getLocale(),
                             searchProductsDto.getCatalog(), product))
                     .flatMap(value -> saveProductToDatabase(value, query, composedCatalogKey, storeId))
-                    .subscribe(null, t -> log.error("Error saving products: {}", t.getMessage()));
+                    .subscribe(null, t -> log.error("Error saving products", t));
         }
 
         if (isCacheEnabled && isLocaleOrCatalogOrStoreCacheEnabled(storeId)) {
             productCacheService.cacheProductSearchResult(localeId, composedCatalogKey, query,
                             searchProductsDto.getProducts())
-                    .subscribe(null, t -> log.error("Error caching product search result: {}", t.getMessage()));
+                    .subscribe(null, t -> log.error("Error caching product search result", t));
         }
 
         return Mono.just(searchProductsDto);
@@ -306,27 +306,20 @@ public abstract class BaseProductService implements ProductService {
     }
 
     private boolean isLocaleOrCatalogOrStoreDisabled(String storeId) {
-        if (optionalLocale.isPresent()) {
-            if (!optionalLocale.get().isActive()) {
-                return true;
-            }
-
-            if (optionalCatalog.isPresent()) {
-                return !optionalCatalog.get().isActive();
-            }
-
-            var store = findStore(storeId);
-
-            if (store.isPresent()) {
-                return !store.get().isActive();
-            }
-        }
-
-        return false;
+        return optionalLocale.map(locale -> !locale.isActive()).orElse(false)
+                || optionalCatalog.map(catalog -> !catalog.isActive()).orElse(false)
+                || findStore(storeId).map(store -> !store.isActive()).orElse(false);
     }
 
     private Optional<StoreDao> findStore(String storeId) {
-        return optionalCatalog.flatMap(catalogDao -> catalogDao.getStores()
-                .stream().filter(value -> value.getId().equalsIgnoreCase(storeId)).findFirst());
+        if (storeId == null) {
+            return Optional.empty();
+        }
+
+        return optionalCatalog
+                .map(CatalogDao::getStores)
+                .flatMap(stores -> stores.stream()
+                        .filter(value -> storeId.equalsIgnoreCase(value.getId()))
+                        .findFirst());
     }
 }

@@ -57,13 +57,14 @@ public class SimpleProductHistoryDataService implements ProductHistoryDataServic
                                             .thenReturn(true);
                                 }
                             })
-                            .switchIfEmpty(createProductData(searchProducts.getLocale(), searchProducts.getCatalog(), productDto, query).thenReturn(false));
+                            .switchIfEmpty(Mono.defer(() -> createProductData(searchProducts.getLocale(),
+                                    searchProducts.getCatalog(), productDto, query).thenReturn(false)));
                 })
                 .then();
     }
 
     public Mono<Void> saveProduct(ProductHistoryDao product) {
-        if (product.getName().isBlank()) {
+        if (product.getName() == null || product.getName().isBlank()) {
             return Mono.empty();
         }
         return productHistoryDataRepository.save(product).then();
@@ -95,7 +96,10 @@ public class SimpleProductHistoryDataService implements ProductHistoryDataServic
                     }
 
                     return product;
-                });
+                })
+                .switchIfEmpty(Mono.fromRunnable(() -> log.warn(
+                        "Locale {} not found, price history of {} was not updated", product.getLocale(),
+                        product.getId())));
     }
 
     private boolean isProductDataEquals(ProductHistoryDao product, ProductDto lastProduct) {

@@ -45,9 +45,10 @@ public class SimpleProductIncidentDataService implements ProductIncidentDataServ
                                 return productIncidentDataRepository.save(incident);
                             });
                 })
-                .switchIfEmpty(productIncidentDataRepository.save(createProductIncident(product.getId(), lastProduct, query)))
-                .doOnError(e -> log.error("Error saving product incident. Product ID: {}, Product reference: {}. Error message: {}",
-                        product.getId(), lastProduct.getReference(), e.getMessage()))
+                .switchIfEmpty(Mono.defer(() -> productIncidentDataRepository.save(
+                        createProductIncident(product.getId(), lastProduct, query))))
+                .doOnError(e -> log.error("Error saving product incident. Product ID: {}, Product reference: {}",
+                        product.getId(), lastProduct.getReference(), e))
                 .onErrorResume(e -> Mono.empty())
                 .then();
     }
