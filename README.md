@@ -6,8 +6,6 @@ and the REST API. Deployable implementations (e.g.
 [content-api-example](https://github.com/prices-crawler/content-api-example)) extend
 it with one product service per catalog.
 
-**Version:** 0.5.1-SNAPSHOT
-
 ## 📁 Requirements
 
 | Component   | Version |
@@ -44,7 +42,7 @@ API: `http://localhost:8080` · Swagger UI: `http://localhost:8080/swagger-ui.ht
 
 | Variable         | Description                       |
 |------------------|-----------------------------------|
-| `ACTIVE_PROFILE` | Spring profile (`dev`, `prod`, …) |
+| `ACTIVE_PROFILE` | Spring profile (`dev`, `prod`, …; default `default`) |
 | `PORT`           | HTTP server port (default `8080`) |
 | `DATABASE_URL`   | MongoDB connection URI            |
 | `DATABASE_NAME`  | MongoDB database name             |

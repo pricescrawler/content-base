@@ -5,7 +5,6 @@ import io.github.pricescrawler.content.common.dto.product.ProductDto;
 import io.github.pricescrawler.content.common.dto.product.parser.ProductContentDto;
 import io.github.pricescrawler.content.common.util.IdUtils;
 import io.github.pricescrawler.content.repository.catalog.CatalogDataService;
-import io.github.pricescrawler.content.service.product.ProductService;
 import io.github.pricescrawler.content.service.product.provider.ProductServiceProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -38,7 +37,7 @@ public class ProductContentParserController {
     @PostMapping
     public Mono<ProductDto> parseProductFromContent(@RequestBody ProductContentDto rawProductContent) {
         return authorizeClientFetch(rawProductContent.getCatalog())
-                .map(_ -> getProductServiceFromCatalog(rawProductContent.getCatalog())
+                .map(_ -> ProductServiceResolver.resolve(productServiceProvider, rawProductContent.getCatalog())
                         .parseProductFromContent(rawProductContent.getCatalog(), rawProductContent.getUrl(),
                                 rawProductContent.getContent(), rawProductContent.getDate()));
     }
@@ -46,7 +45,7 @@ public class ProductContentParserController {
     @PostMapping("/list")
     public Mono<List<ProductDto>> parseProductListFromContent(@RequestBody ProductContentDto rawProductContent) {
         return authorizeClientFetch(rawProductContent.getCatalog())
-                .map(_ -> getProductServiceFromCatalog(rawProductContent.getCatalog())
+                .map(_ -> ProductServiceResolver.resolve(productServiceProvider, rawProductContent.getCatalog())
                         .parseProductsFromContent(rawProductContent.getCatalog(), rawProductContent.getContent(),
                                 rawProductContent.getDate()));
     }
@@ -66,14 +65,5 @@ public class ProductContentParserController {
                 .filter(CatalogDao::isClientFetchRequired)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN,
                         String.format("%s catalog does not accept client-supplied content", composedCatalogKey))));
-    }
-
-    private ProductService getProductServiceFromCatalog(String catalogAlias) {
-        try {
-            return productServiceProvider.getServiceFromCatalog(catalogAlias);
-        } catch (Exception ex) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("%s catalog not found",
-                    catalogAlias));
-        }
     }
 }

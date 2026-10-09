@@ -47,7 +47,7 @@ public class ProductUtils {
 
             return mutablePrices;
         } catch (Exception exception) {
-            log.error("PricesHistory parser exception: {}", exception.getMessage());
+            log.error("PricesHistory parser exception", exception);
         }
 
         return storedPrices;

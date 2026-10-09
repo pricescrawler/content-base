@@ -45,7 +45,7 @@ public class FeedbackController {
                 .build();
 
         return feedbackDataRepository.save(feedback)
-                .doOnError(e -> log.error("Error saving feedback. Error message: {}", e.getMessage()))
+                .doOnError(e -> log.error("Error saving feedback", e))
                 .then();
     }
 
