@@ -27,6 +27,11 @@
             <artifactId>prices-crawler-content-controller</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.github.pricescrawler.content</groupId>
+            <artifactId>prices-crawler-content-mcp</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

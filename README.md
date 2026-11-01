@@ -21,6 +21,7 @@ it with one product service per catalog.
 content-base/
 ├── prices-crawler-content-application/  # reference Spring Boot app
 ├── prices-crawler-content-controller/   # REST controllers
+├── prices-crawler-content-mcp/          # MCP server (read-only tools for AI agents)
 ├── prices-crawler-content-service/      # BaseProductService, cache, lists, scheduler
 ├── prices-crawler-content-repository/   # reactive MongoDB repositories
 └── prices-crawler-content-common/       # DTOs, DAOs, utilities
@@ -56,6 +57,33 @@ API: `http://localhost:8080` · Swagger UI: `http://localhost:8080/swagger-ui.ht
 | `prices.crawler.catalog.data.refresh-seconds`      | `300`   | Locale/catalog toggle refresh interval (`0` = startup snapshot only) |
 | `prices.crawler.controller.product.search.enabled` | `false` | Enable the search endpoint                                           |
 | `prices.crawler.background.service.cron.enabled`   | `false` | Enable the background cleanup job                                    |
+| `prices.crawler.controller.mcp.enabled`            | `false` | Enable the MCP server at `/mcp`                                      |
+| `prices.crawler.controller.mcp.authenticated`      | `false` | Require basic auth on `/mcp` (reference application)                 |
+
+## 🤖 MCP Server
+
+`prices-crawler-content-mcp` exposes the price data to AI agents (Claude, IDEs, …) through
+the [Model Context Protocol](https://modelcontextprotocol.io), using Spring AI's stateless
+Streamable HTTP transport. Implementations opt in by adding the module as a dependency and
+setting `prices.crawler.controller.mcp.enabled=true`.
+
+| Tool                       | Purpose                                                    |
+|----------------------------|------------------------------------------------------------|
+| `list_catalogs`            | Active catalogs, their categories and stores               |
+| `search_products`          | Live text search in up to 10 catalogs (max 50 per catalog) |
+| `get_price_history`        | Stored price history of one product                        |
+| `find_products_by_barcode` | The same EAN/UPC across catalogs, to compare prices        |
+| `get_shared_list`          | Products of a list shared from the web app                 |
+
+All tools are read-only: ingest, parser and list storage are not exposed. Any
+`spring.ai.mcp.server.*` property overrides the module defaults (name `prices-crawler`,
+stateless async server, 60 s request timeout).
+
+Connect from Claude Code:
+
+```bash
+claude mcp add --transport http prices-crawler http://localhost:8080/mcp
+```
 
 ## 📚 Documentation
 
