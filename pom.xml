@@ -17,6 +17,7 @@
         <module>prices-crawler-content-application</module>
         <module>prices-crawler-content-common</module>
         <module>prices-crawler-content-controller</module>
+        <module>prices-crawler-content-mcp</module>
         <module>prices-crawler-content-repository</module>
         <module>prices-crawler-content-service</module>
     </modules>
@@ -25,7 +26,20 @@
         <java.version>25</java.version>
         <lombok.version>1.18.48</lombok.version>
         <springdoc.version>3.1.1</springdoc.version>
+        <spring-ai.version>2.0.2</spring-ai.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>${spring-ai.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
