@@ -8,7 +8,12 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.Objects;
 
+/**
+ * One entry of a product's price history. An entry is stored when the price changes,
+ * and holds from its {@code date} until the next entry.
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -23,8 +28,14 @@ public class PriceDao {
     private BigDecimal pricePerQuantityValue;
     private String pricePerQuantityUnit;
     private String quantity;
+    /**
+     * Only in entries stored before 0.8.3; the name lives on the product.
+     */
     private String name;
     private String date;
+    /**
+     * Only in entries stored before 0.8.3; the data map lives on the product.
+     */
     private Map<String, Object> data;
 
     public PriceDao(ProductDto product) {
@@ -37,8 +48,18 @@ public class PriceDao {
         this.pricePerQuantityValue = product.getPricePerQuantityValue();
         this.pricePerQuantityUnit = product.getPricePerQuantityUnit();
         this.quantity = product.getQuantity();
-        this.name = product.getName();
         this.date = product.getDate();
-        this.data = product.getData();
+    }
+
+    /**
+     * True when both entries show the same prices and quantity, whatever their dates.
+     * Compares the display strings, which every catalog fills.
+     */
+    public boolean hasSamePriceAs(PriceDao other) {
+        return other != null &&
+                Objects.equals(regularPrice, other.regularPrice) &&
+                Objects.equals(campaignPrice, other.campaignPrice) &&
+                Objects.equals(pricePerQuantity, other.pricePerQuantity) &&
+                Objects.equals(quantity, other.quantity);
     }
 }

@@ -55,6 +55,14 @@ public class DateTimeUtils {
     }
 
     /**
+     * Returns the instant the next day starts in the given timezone (UTC when null).
+     */
+    public static Instant getStartOfNextDay(String timezone) {
+        var zoneId = getZoneId(timezone);
+        return LocalDate.now(zoneId).plusDays(1).atStartOfDay(zoneId).toInstant();
+    }
+
+    /**
      * Returns the ZoneId for the specified String value
      */
     public static ZoneId getZoneId(String timezone) {

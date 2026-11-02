@@ -11,6 +11,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.Instant;
 import java.util.List;
 
 @Data
@@ -23,9 +24,18 @@ import java.util.List;
 public class ProductCacheDao extends ProductCacheDto {
     @Id
     private String id;
+    /**
+     * When MongoDB may delete the entry (TTL index); the end of the day it was cached on.
+     */
+    private Instant expiresAt;
 
     public ProductCacheDao(String id, String currentDateTime, List<ProductDto> products) {
         super(currentDateTime, products);
         this.id = id;
+    }
+
+    public ProductCacheDao(String id, String currentDateTime, List<ProductDto> products, Instant expiresAt) {
+        this(id, currentDateTime, products);
+        this.expiresAt = expiresAt;
     }
 }

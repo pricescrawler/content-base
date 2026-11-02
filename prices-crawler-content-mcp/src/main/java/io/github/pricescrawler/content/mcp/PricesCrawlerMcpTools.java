@@ -92,7 +92,9 @@ public class PricesCrawlerMcpTools {
     @McpTool(name = "get_price_history", title = "Get price history",
             annotations = @McpTool.McpAnnotations(readOnlyHint = true, destructiveHint = false, idempotentHint = true, openWorldHint = false),
             description = "Returns a product with its stored price history. Use the locale, catalog and reference "
-                    + "of a product returned by search_products (catalog without the locale prefix).")
+                    + "of a product returned by search_products (catalog without the locale prefix). Each price "
+                    + "entry holds from its date until the next one; the last entry is the price on lastSeen, the "
+                    + "last day the product was seen.")
     public Mono<ProductHistoryDto> getPriceHistory(
             @McpToolParam(description = "Locale id, e.g. \"pt\"") String locale,
             @McpToolParam(description = "Catalog id without the locale, e.g. \"continente\"") String catalog,
