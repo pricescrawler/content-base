@@ -31,7 +31,14 @@ public class ProductHistoryDao extends Identifiable {
     private Boolean isActive = true;
     private int hits;
     private List<String> searchTerms;
+    /**
+     * Price changes, oldest first. A price is stored again only when it changes.
+     */
     private List<PriceDao> prices;
+    /**
+     * When the product was last seen in a search, whether or not its price changed.
+     */
+    private String lastSeen;
 
     public ProductHistoryDao(String locale, String catalog, ProductDto product) {
         this.locale = locale;

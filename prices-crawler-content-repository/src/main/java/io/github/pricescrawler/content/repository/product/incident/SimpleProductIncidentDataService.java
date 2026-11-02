@@ -40,7 +40,8 @@ public class SimpleProductIncidentDataService implements ProductIncidentDataServ
                                     incident.incrementHits();
                                 }
                                 if (productDataConfig.isSearchTermsEnabled()) {
-                                    incident.setSearchTerms(ProductUtils.parseSearchTerms(incident.getSearchTerms(), query));
+                                    incident.setSearchTerms(ProductUtils.parseSearchTerms(incident.getSearchTerms(), query,
+                                            productDataConfig.getSearchTermsLimit()));
                                 }
                                 return productIncidentDataRepository.save(incident);
                             });
@@ -71,7 +72,7 @@ public class SimpleProductIncidentDataService implements ProductIncidentDataServ
                 .build();
 
         if (productDataConfig.isSearchTermsEnabled()) {
-            productIncident.setSearchTerms(ProductUtils.parseSearchTerms(null, query));
+            productIncident.setSearchTerms(ProductUtils.parseSearchTerms(null, query, productDataConfig.getSearchTermsLimit()));
         }
 
         return productIncident;
@@ -90,8 +91,9 @@ public class SimpleProductIncidentDataService implements ProductIncidentDataServ
 
                     for (var incident : productIncident.getProducts()) {
                         product.updateFromProduct(incident);
-                        product.setPrices(ProductUtils.parsePricesHistory(product.getPrices(), new PriceDao(incident), timezone));
-                        product.setSearchTerms(ProductUtils.parseSearchTerms(product.getSearchTerms(), null));
+                        ProductUtils.addPrice(product, new PriceDao(incident), timezone);
+                        product.setSearchTerms(ProductUtils.parseSearchTerms(product.getSearchTerms(), null,
+                                productDataConfig.getSearchTermsLimit()));
                         product.setEanUpcList(ProductUtils.parseEanUpcList(product.getEanUpcList(), incident.getEanUpcList()));
                     }
 

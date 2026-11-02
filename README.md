@@ -58,6 +58,8 @@ API: `http://localhost:8080` · Swagger UI: `http://localhost:8080/swagger-ui.ht
 | `prices.crawler.controller.product.search.enabled` | `false` | Enable the search endpoint                                           |
 | `prices.crawler.background.service.cron.enabled`   | `false` | Enable the background cleanup job                                    |
 | `prices.crawler.controller.mcp.enabled`            | `false` | Enable the MCP server at `/mcp`                                      |
+| `prices.crawler.mongodb.indexes.enabled`           | `true`  | Create the MongoDB indexes behind the repository queries at startup  |
+| `prices.crawler.product.data.search-terms-limit`   | `50`    | Most recent search terms kept per product (`0` keeps them all)       |
 | `prices.crawler.controller.mcp.authenticated`      | `false` | Require basic auth on `/mcp` (reference application)                 |
 
 ## 🤖 MCP Server
@@ -93,9 +95,10 @@ model, background maintenance.
 ## 🚀 Release Process (SemVer)
 
 **GitHub Actions** → **Release (SemVer)** → **Run workflow** (`main` branch only),
-choosing `major`/`minor`/`patch`. This computes the next version from `pom.xml`,
-updates all Maven modules, tags and publishes a GitHub Release, then bumps to the next
-snapshot.
+choosing `major`/`minor`/`patch`. `patch` releases the version in `pom.xml` without
+`-SNAPSHOT` (`0.8.3-SNAPSHOT` → `0.8.3`); `minor`/`major` bump from it (`0.9.0`,
+`1.0.0`). The workflow updates all Maven modules, tags and publishes a GitHub Release,
+then bumps to the next snapshot. It stops if the tag already exists.
 
 ## 🤝 Contributing
 

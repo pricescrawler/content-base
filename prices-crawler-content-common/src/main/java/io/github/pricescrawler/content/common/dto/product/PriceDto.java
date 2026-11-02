@@ -32,4 +32,11 @@ public class PriceDto {
         this.date = DateTimeUtils.getDateFromDateTime(price.getDate(), timezone);
         this.data = DataMapUtils.getMapPublicKeys(price.getData());
     }
+
+    /**
+     * A copy of this entry on another date (a local date, like {@link #date}).
+     */
+    public PriceDto withDate(String localDate) {
+        return new PriceDto(regularPrice, campaignPrice, pricePerQuantity, quantity, name, localDate, data);
+    }
 }

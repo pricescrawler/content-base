@@ -10,4 +10,8 @@ import org.springframework.context.annotation.Configuration;
 public class ProductDataConfig {
     private boolean hintsEnabled = true;
     private boolean searchTermsEnabled = true;
+    /**
+     * Most recent search terms kept per product; 0 keeps them all.
+     */
+    private int searchTermsLimit = 50;
 }

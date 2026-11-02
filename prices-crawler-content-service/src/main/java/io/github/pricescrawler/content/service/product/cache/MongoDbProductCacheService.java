@@ -14,6 +14,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Log4j2
 @Service
@@ -30,8 +31,13 @@ public class MongoDbProductCacheService implements ProductCacheService {
         var key = IdUtils.parse(locale, catalog, reference);
         return productCacheDataRepository.findById(key)
                 .hasElement()
-                .flatMap(exists -> exists ? Mono.empty() :
-                        productCacheDataRepository.save(new ProductCacheDao(key, DateTimeUtils.getCurrentDateTime(), products)).then());
+                .flatMap(exists -> exists ? Mono.empty() : catalogService.searchLocaleById(locale)
+                        .map(localeDto -> Optional.ofNullable(localeDto.getTimezone()))
+                        .defaultIfEmpty(Optional.empty())
+                        .flatMap(timezone -> productCacheDataRepository.save(new ProductCacheDao(key,
+                                DateTimeUtils.getCurrentDateTime(), products,
+                                DateTimeUtils.getStartOfNextDay(timezone.orElse(null)))))
+                        .then());
     }
 
     @Override

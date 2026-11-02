@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -72,10 +73,12 @@ public class SimpleProductHistoryDataService implements ProductHistoryDataServic
 
     private Mono<Void> createProductData(String locale, String catalog, ProductDto product, String query) {
         var productData = new ProductHistoryDao(locale, catalog, product);
-        productData.setPrices(List.of(new PriceDao(product)));
+        var price = new PriceDao(product);
+        productData.setPrices(new ArrayList<>(List.of(price)));
+        productData.setLastSeen(price.getDate());
 
         if (productDataConfig.isSearchTermsEnabled()) {
-            productData.setSearchTerms(ProductUtils.parseSearchTerms(null, query));
+            productData.setSearchTerms(ProductUtils.parseSearchTerms(null, query, productDataConfig.getSearchTermsLimit()));
         }
 
         return saveProduct(productData);
@@ -84,7 +87,7 @@ public class SimpleProductHistoryDataService implements ProductHistoryDataServic
     private Mono<ProductHistoryDao> updatedProductData(ProductHistoryDao product, ProductDto lastProduct, String query) {
         return catalogDataService.findLocaleById(product.getLocale())
                 .map(locale -> {
-                    product.setPrices(ProductUtils.parsePricesHistory(product.getPrices(), new PriceDao(lastProduct), locale.getTimezone()));
+                    ProductUtils.addPrice(product, new PriceDao(lastProduct), locale.getTimezone());
                     product.setEanUpcList(ProductUtils.parseEanUpcList(product.getEanUpcList(), lastProduct.getEanUpcList()));
 
                     if (productDataConfig.isHintsEnabled()) {
@@ -92,7 +95,8 @@ public class SimpleProductHistoryDataService implements ProductHistoryDataServic
                     }
 
                     if (productDataConfig.isSearchTermsEnabled()) {
-                        product.setSearchTerms(ProductUtils.parseSearchTerms(product.getSearchTerms(), query));
+                        product.setSearchTerms(ProductUtils.parseSearchTerms(product.getSearchTerms(), query,
+                                productDataConfig.getSearchTermsLimit()));
                     }
 
                     return product;

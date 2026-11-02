@@ -4,7 +4,9 @@ import io.github.pricescrawler.content.common.dao.product.cache.ProductCacheDao;
 import io.github.pricescrawler.content.common.dto.product.ProductDto;
 import io.github.pricescrawler.content.repository.product.cache.ProductCacheDataRepository;
 import io.github.pricescrawler.content.service.catalog.CatalogService;
+import io.github.pricescrawler.content.common.dto.catalog.LocaleDto;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -12,6 +14,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,10 +41,30 @@ class MongoDbProductCacheServiceTest {
         var products = new ArrayList<ProductDto>();
 
         when(productCacheDataRepository.findById(anyString())).thenReturn(Mono.empty());
+        when(catalogService.searchLocaleById(locale)).thenReturn(Mono.just(LocaleDto.builder().timezone("Europe/Lisbon").build()));
         when(productCacheDataRepository.save(any(ProductCacheDao.class))).thenReturn(Mono.just(new ProductCacheDao()));
 
         productCacheService.cacheProductSearchResult(locale, catalog, reference, products).block();
-        verify(productCacheDataRepository, times(1)).save(any(ProductCacheDao.class));
+
+        var saved = ArgumentCaptor.forClass(ProductCacheDao.class);
+        verify(productCacheDataRepository, times(1)).save(saved.capture());
+        // Expires when the day ends in the locale's timezone.
+        var zone = ZoneId.of("Europe/Lisbon");
+        assertEquals(LocalDate.now(zone).plusDays(1).atStartOfDay(zone).toInstant(), saved.getValue().getExpiresAt());
+    }
+
+    @Test
+    void cacheProductSearchResultWithAnUnknownLocaleExpiresAtUtcMidnight() {
+        when(productCacheDataRepository.findById(anyString())).thenReturn(Mono.empty());
+        when(catalogService.searchLocaleById("xx")).thenReturn(Mono.empty());
+        when(productCacheDataRepository.save(any(ProductCacheDao.class))).thenReturn(Mono.just(new ProductCacheDao()));
+
+        productCacheService.cacheProductSearchResult("xx", "demo", "1", new ArrayList<>()).block();
+
+        var saved = ArgumentCaptor.forClass(ProductCacheDao.class);
+        verify(productCacheDataRepository).save(saved.capture());
+        assertEquals(LocalDate.now(ZoneOffset.UTC).plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant(),
+                saved.getValue().getExpiresAt());
     }
 
     @Test
